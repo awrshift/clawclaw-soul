@@ -1,4 +1,9 @@
-"""Core engine: agent_id + timestamp → 5 personality modifiers."""
+"""Core engine: agent_id + timestamp → personality modifiers.
+
+v1: 5 flat modifiers (verbosity, agreeableness, creativity, risk_tolerance, proactivity)
+v2: 9 graha dimensions from Digital Soul (authority, empathy, execution, analysis,
+    wisdom, aesthetics, restriction, innovation, compression)
+"""
 
 from __future__ import annotations
 
@@ -12,6 +17,75 @@ from agent_soul.tables import DIGNITY_SCORES, get_dignity, get_sign, get_sign_de
 from agent_soul.transit import compute_transit_scores
 
 MODIFIER_NAMES = ["verbosity", "agreeableness", "creativity", "risk_tolerance", "proactivity"]
+
+# v2: 9 graha dimension names
+DIMENSION_NAMES = [
+    "authority", "empathy", "execution", "analysis",
+    "wisdom", "aesthetics", "restriction", "innovation", "compression",
+]
+
+# Planet → dimension mapping (each planet governs one dimension)
+PLANET_TO_DIMENSION = {
+    "Sun": "authority",
+    "Moon": "empathy",
+    "Mars": "execution",
+    "Mercury": "analysis",
+    "Jupiter": "wisdom",
+    "Venus": "aesthetics",
+    "Saturn": "restriction",
+    "Rahu": "innovation",
+    "Ketu": "compression",
+}
+
+# Dasha overlay v2: how each mahadasha lord shifts ALL 9 dimensions.
+# Primary dimension gets the strongest boost; related dimensions get secondary effects.
+DASHA_OVERLAY_V2: dict[str, dict[str, float]] = {
+    "Sun": {
+        "authority": 0.35, "empathy": -0.1, "execution": 0.1,
+        "analysis": 0.0, "wisdom": 0.1, "aesthetics": 0.0,
+        "restriction": -0.1, "innovation": 0.0, "compression": 0.0,
+    },
+    "Moon": {
+        "authority": 0.0, "empathy": 0.35, "execution": -0.1,
+        "analysis": 0.1, "wisdom": 0.15, "aesthetics": 0.15,
+        "restriction": -0.1, "innovation": 0.0, "compression": 0.0,
+    },
+    "Mars": {
+        "authority": 0.1, "empathy": -0.2, "execution": 0.35,
+        "analysis": -0.1, "wisdom": 0.0, "aesthetics": 0.0,
+        "restriction": -0.15, "innovation": 0.1, "compression": 0.0,
+    },
+    "Mercury": {
+        "authority": 0.0, "empathy": 0.0, "execution": 0.1,
+        "analysis": 0.35, "wisdom": 0.1, "aesthetics": 0.1,
+        "restriction": 0.0, "innovation": 0.15, "compression": 0.0,
+    },
+    "Jupiter": {
+        "authority": 0.1, "empathy": 0.15, "execution": 0.0,
+        "analysis": 0.1, "wisdom": 0.35, "aesthetics": 0.1,
+        "restriction": 0.0, "innovation": 0.0, "compression": -0.1,
+    },
+    "Venus": {
+        "authority": 0.0, "empathy": 0.15, "execution": 0.0,
+        "analysis": 0.0, "wisdom": 0.1, "aesthetics": 0.35,
+        "restriction": -0.1, "innovation": 0.1, "compression": 0.0,
+    },
+    "Saturn": {
+        "authority": -0.1, "empathy": -0.1, "execution": -0.1,
+        "analysis": 0.1, "wisdom": 0.0, "aesthetics": -0.15,
+        "restriction": 0.35, "innovation": -0.1, "compression": 0.15,
+    },
+    "Rahu": {
+        "authority": 0.0, "empathy": -0.15, "execution": 0.1,
+        "analysis": 0.1, "wisdom": -0.1, "aesthetics": 0.0,
+        "restriction": -0.1, "innovation": 0.35, "compression": 0.0,
+    },
+    "Ketu": {
+        "authority": -0.1, "empathy": 0.0, "execution": -0.1,
+        "analysis": -0.1, "wisdom": 0.15, "aesthetics": 0.0,
+        "restriction": 0.1, "innovation": 0.0, "compression": 0.35,
+    },
+}
 
 # Planet → modifier weights (from MAPPING.md v2)
 PLANET_MODIFIER_WEIGHTS: dict[str, dict[str, float]] = {
@@ -145,6 +219,7 @@ def compute_modifiers(
     agent_id: str,
     timestamp: datetime | None = None,
     strict_mode: bool = False,
+    weights: tuple[float, float, float] = (0.60, 0.25, 0.15),
 ) -> dict:
     """Compute deterministic personality modifiers for an AI agent.
 
@@ -152,6 +227,7 @@ def compute_modifiers(
         agent_id: Unique identifier for the agent
         timestamp: UTC datetime (defaults to now)
         strict_mode: If True, clamp modifiers more aggressively
+        weights: (natal, dasha, transit) weights, must sum to 1.0
 
     Returns:
         Dict with modifiers, phase info, volatility, and metadata
@@ -186,7 +262,8 @@ def compute_modifiers(
     modifiers = {}
     clamp = 0.6 if strict_mode else 1.0
     for mod in MODIFIER_NAMES:
-        raw = natal_base[mod] * 0.60 + dasha_mod[mod] * 0.25 + transit_mod[mod] * 0.15
+        w_natal, w_dasha, w_transit = weights
+        raw = natal_base[mod] * w_natal + dasha_mod[mod] * w_dasha + transit_mod[mod] * w_transit
         value = math.tanh(raw)
         modifiers[mod] = max(-clamp, min(clamp, value))
 
@@ -201,5 +278,99 @@ def compute_modifiers(
         "phase": describe_phase(active),
         "volatility": volatility,
         "strict_mode": strict_mode,
+        "next_refresh": (timestamp + timedelta(hours=4)).isoformat(),
+    }
+
+
+# ──────────────────────────────────────────────
+# v2: 9 Graha Dimensions (Digital Soul)
+# ──────────────────────────────────────────────
+
+def compute_transit_dimensions(
+    transit_scores: dict[str, float],
+) -> dict[str, float]:
+    """Convert transit scores into 9-dimension adjustments.
+
+    Each planet's transit score maps directly to its governing dimension.
+    """
+    dimensions = {d: 0.0 for d in DIMENSION_NAMES}
+    for planet, score in transit_scores.items():
+        dim = PLANET_TO_DIMENSION.get(planet)
+        if dim:
+            dimensions[dim] += score * 0.5  # Scale transit effect
+    return dimensions
+
+
+def compute_modifiers_v2(
+    soul: "AgentSoul",
+    timestamp: datetime | None = None,
+    weights: tuple[float, float, float] = (0.60, 0.25, 0.15),
+) -> dict:
+    """Compute 9-dimensional personality modifiers from a Digital Soul.
+
+    Hierarchy: Natal (ceiling) x Dasha (throttle) x Transit (trigger).
+    Combined additively with tanh saturation and hard caps.
+
+    Args:
+        soul: AgentSoul instance (from soul.py)
+        timestamp: UTC datetime (defaults to now)
+        weights: (natal, dasha, transit) weights
+
+    Returns:
+        Dict with dimensions (9), yogas, phase info, volatility, metadata
+    """
+    from agent_soul.soul import AgentSoul
+
+    if timestamp is None:
+        timestamp = datetime.now(timezone.utc)
+    elif timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=timezone.utc)
+
+    w_natal, w_dasha, w_transit = weights
+
+    # 1. Natal base (from soul — already computed at creation)
+    natal_dims = soul.dimensions
+
+    # 2. Dasha overlay
+    moon_lon = soul.moon_lon
+    timeline = compute_dasha_timeline(soul.birth_dt, moon_lon)
+    active = find_active_period(timeline, timestamp)
+
+    if active is not None:
+        dasha_dims = DASHA_OVERLAY_V2.get(active["mahadasha"], {})
+    else:
+        dasha_dims = {}
+
+    # 3. Transit weather
+    transit_positions = get_planet_positions(timestamp)
+    natal_moon_sign = soul.positions["Moon"]["sign"]
+    transit_scores = compute_transit_scores(transit_positions, natal_moon_sign)
+    transit_dims = compute_transit_dimensions(transit_scores)
+
+    # 4. Combine: additive with tanh
+    dimensions = {}
+    for dim in DIMENSION_NAMES:
+        raw = (
+            natal_dims.get(dim, 0.0) * w_natal
+            + dasha_dims.get(dim, 0.0) * w_dasha
+            + transit_dims.get(dim, 0.0) * w_transit
+        )
+        dimensions[dim] = max(-1.0, min(1.0, math.tanh(raw)))
+
+    # 5. Tarabala volatility
+    natal_positions = get_planet_positions(soul.birth_dt)
+    volatility = compute_tarabala_volatility(transit_positions, natal_positions)
+
+    return {
+        "agent_id": soul.seed,
+        "genesis_timestamp": soul.birth_dt.isoformat(),
+        "computed_at": timestamp.isoformat(),
+        "lagna": soul.lagna_sign,
+        "dimensions": dimensions,
+        "yogas": soul.yogas,
+        "retrograde": soul.retrograde_planets,
+        "capabilities": soul.capabilities,
+        "phase": describe_phase(active),
+        "volatility": volatility,
         "next_refresh": (timestamp + timedelta(hours=4)).isoformat(),
     }
