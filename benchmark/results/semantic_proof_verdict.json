@@ -1,0 +1,43 @@
+{
+  "semantic_go": false,
+  "target_period_days": 9.0,
+  "sigma_threshold": 3.0,
+  "metrics": {
+    "sentence_vader_temporal": {
+      "mean": 0.38566084176196763,
+      "std": 0.19100876843587491,
+      "fft_peak_period": 45.0,
+      "fft_peak_sigma": 5.469903297246267
+    },
+    "sentence_vader_static": {
+      "mean": 0.22264312819470902,
+      "std": 0.04893215553141436,
+      "fft_peak_period": 3.5999999999999996,
+      "fft_peak_sigma": 2.524448729719294
+    },
+    "sentence_vader_random": {
+      "mean": 0.4059563189922341,
+      "std": 0.2269887705289776,
+      "fft_peak_period": 22.5,
+      "fft_peak_sigma": 2.640062708708978
+    },
+    "mtld_temporal": {
+      "mean": 122.67307994731887,
+      "std": 32.72287265657512,
+      "fft_peak_period": 45.0,
+      "fft_peak_sigma": 3.0662827650965068
+    },
+    "mtld_static": {
+      "mean": 122.2669227798895,
+      "std": 23.37529135927188,
+      "fft_peak_period": 8.181818181818182,
+      "fft_peak_sigma": 2.8594879116161827
+    },
+    "mtld_random": {
+      "mean": 126.06297489860479,
+      "std": 47.45353335264962,
+      "fft_peak_period": 5.625,
+      "fft_peak_sigma": 2.862973200692993
+    }
+  }
+}

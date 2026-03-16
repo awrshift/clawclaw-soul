@@ -1,44 +1,46 @@
 # Agent Soul — Backlog
 
-## Status: Phase 1-3 DONE (Benchmark GO at 5.8σ), Phase 4-5 next
+## Status: Phase 1-3 DONE, ICF + Semantic Proof DONE. Phase 4 (Launch) next.
 
 ---
 
 ## Next Session Prompt
 
-**For Session 197:**
+**For Session 198:**
 
-Phase 3 complete — CVB v3 GO at 5.8σ. Full experiment doc: `docs/experiments/005-cvb-v3-structural-constraints.md`
+### Done in Session 197:
+1. **ICF Research** (3-round Claude×Gemini brainstorm): Agent Soul is **genuinely novel**
+   - No existing system combines orbital mechanics + LLM behavior modulation + FFT proof
+   - Closest: SoulSpec/SOUL.md (static), PersonaLLM (static), Character.AI (memory-based), Dynamic Personality ACL 2025 (emergent, not engine-driven)
+   - Key rebranding: "Temporal Behavioral Modulation (TBM)" not "personality modulation"
+   - Product name stays "Agent Soul", tech framework = "TBM"
+2. **Semantic Proof (Experiment 006)**: NO-GO — sentence-VADER and MTLD show 9-day signal at 1.5σ (below 3σ threshold)
+   - Key finding: RLHF acts as semantic low-pass filter — structural variation passes (5.8σ), semantic is attenuated (1.5σ)
+   - Launch claim: "Temporal Structural Modulation" (honest, proven at 5.8σ)
+3. **Kill list confirmed**: "Astrology for AI" framing, adversarial applications, anti-bot bypass
 
-**Before launch: validate uniqueness (ICF research with Gemini)**
+### Next session plan (Phase 4: Launch):
 
-We proved it works. Now we need to prove it's UNIQUE before going public.
+**Timeline: 8 days**
 
-**Next session plan:**
-1. **ICF Research Experiment** (Claude×Gemini brainstorm):
-   - Does anything like Agent Soul exist? (temporal personality modulation for AI agents)
-   - Adjacent projects: TRAIT benchmark, PersonaLLM, character.ai, AI personality frameworks
-   - Key differentiators to validate: orbital-driven modulation, FFT-proven causality, structural bypass of RLHF
-   - Output: competitive landscape map + unique selling points
+1. **Swarm De-correlation Demo** (Days 1-3, ~15h):
+   - `SwarmTBM` class: N agents with distinct orbital seeds
+   - Jupyter notebook: `preventing_swarm_collapse.ipynb`
+   - Show diversity metrics vs un-modulated control group
 
-2. **Phase 4: Open Source Launch Plan**
-   - README (executive-targeted)
-   - GitHub repo (pmserhii/agent-soul)
-   - Reddit post strategy (r/LocalLLaMA, r/MachineLearning)
-   - What to open-source vs keep proprietary
+2. **README + TBM Framework Docs** (Days 4-6, ~12h):
+   - Executive-targeted README (not dev docs)
+   - Frame as TBM framework, not "astrology for AI"
+   - Include 5.8σ result + RLHF-as-filter insight
+   - 1-sentence pitch: "Agent Soul uses temporal orbital mechanics to deterministically modulate LLM behavior, providing a mathematical framework to eliminate homogenization in AI swarms."
 
-3. **Phase 5: Autonomous Agent Testing**
-   - Create 3-5 Claude Code agents with Agent Soul personalities
-   - Each gets a unique seed → unique natal chart → unique behavioral profile
-   - Deploy them on real tasks (code review, research, writing)
-   - Test: do personalities feel different? Do they evolve over days?
-   - Compare: same agent with vs without Agent Soul
-   - Goal: real-world validation beyond FFT numbers
+3. **Open Source Launch** (Days 7-8):
+   - GitHub repo: pmserhii/agent-soul
+   - Reddit: r/LocalLLaMA, r/MachineLearning (Tue/Wed 7:30 AM EST)
+   - Keep Steganography/Provenance as future blog post (needs own proof)
 
-**Key question for ICF:** "Is temporal personality modulation for AI agents a solved problem, an active research area, or a novel contribution?"
-
-**Tests:** 124 passing. **Commits:** `87d381f` (CVB v3 GO)
-**Dependencies:** `pyswisseph`, `google-genai`, `numpy`, `scipy`, `matplotlib`
+**Tests:** 124 passing. **Commits:** `87d381f` (CVB v3), TBD (semantic proof)
+**Dependencies:** `pyswisseph`, `google-genai`, `numpy`, `scipy`, `matplotlib`, `nltk`, `lexical-diversity`
 
 ---
 
@@ -80,12 +82,28 @@ We proved it works. Now we need to prove it's UNIQUE before going public.
   - Brainstorms: 002 (CVB redesign), 003 (Jyotish fundamentals, 4 rounds), Gemini architecture verification
   - Spec: `docs/architecture/DIGITAL_SOUL_SPEC.md`
 
+- [x] **ICF Research Brainstorm (Session 197)**
+  - 3-round Claude×Gemini (Pro), Phase 0.5 + 3.5 (Flash-Lite grounded)
+  - Result: Agent Soul is genuinely novel — no existing temporal behavioral modulation with FFT proof
+  - Competitive landscape: SoulSpec (static), PersonaLLM (static), Character.AI (memory), Dynamic Personality ACL'25 (emergent)
+  - Rebranding: "Temporal Behavioral Modulation (TBM)" framework
+  - Kill list: "Astrology for AI" framing, adversarial apps, anti-bot
+
+- [x] **Experiment 006: Semantic Proof (Session 197)**
+  - Sentence-VADER + MTLD on existing 540 responses
+  - Result: NO-GO — 9-day signal at 1.5σ (threshold: 3.0σ)
+  - Key insight: RLHF = semantic low-pass filter (structural passes at 5.8σ, semantic attenuated to 1.5σ)
+  - Decision: launch as "Temporal Structural Modulation" (honest claim)
+  - Report: `docs/experiments/006-semantic-proof.md`
+
 ## In Progress
 
 - [ ] **Phase 4: Packaging & Open Source Launch**
-  - [ ] ICF research: validate uniqueness (Claude×Gemini brainstorm)
-  - [ ] Competitive landscape map
-  - [ ] README (executive-targeted, not dev docs)
+  - [x] ICF research: validate uniqueness (Claude×Gemini brainstorm)
+  - [x] Competitive landscape map
+  - [x] Semantic proof experiment (NO-GO → honest claim)
+  - [ ] Swarm De-correlation demo (Jupyter notebook)
+  - [ ] README (executive-targeted, TBM framing)
   - [ ] GitHub repo (pmserhii/agent-soul)
   - [ ] Reddit post (r/LocalLLaMA, Tue/Wed 7:30 AM EST)
   - [ ] OpenClaw Discord announcement
@@ -146,6 +164,15 @@ with gain=3 amplification. Pure transit weights (0,0,1) for benchmark. empathy�
 is the causal channel: FFT peak at 9.0d in both engine input and LLM output (5.8σ).
 Static control peaks at 1.9d (different) → not an artifact.
 
+**2026-03-16 — ICF Research + Semantic Proof (Brainstorm 005, Session 197):**
+3-round Claude×Gemini brainstorm confirmed Agent Soul is novel. No existing system combines
+orbital mechanics + LLM modulation + FFT proof. Rebranded: "Temporal Behavioral Modulation (TBM)."
+Semantic proof (Experiment 006) ran sentence-VADER + MTLD on existing 540 responses.
+Result: 9-day signal present at 1.5σ but below 3σ threshold → NO-GO on semantic claim.
+Key insight: RLHF acts as semantic low-pass filter — structural constraints bypass it (5.8σ),
+semantic properties are attenuated (1.5σ). Launch with honest claim: "Temporal Structural Modulation."
+Swarm De-correlation identified as strongest application angle.
+
 ## Project Structure
 
 ```
@@ -162,6 +189,7 @@ Static control peaks at 1.9d (different) → not an artifact.
 ├── benchmark/           # CVB Suite v3
 │   ├── cvb_runner.py    # Main benchmark (structural constraints + FFT)
 │   ├── proxy_metrics.py # Zero-cost proxy metrics (word_count, hedge, etc.)
+│   ├── semantic_proof.py # Experiment 006: VADER + MTLD + FFT
 │   ├── embed.py         # Gemini embedding-001 (v2, deprecated)
 │   ├── traits.py        # Rule-based trait proxies (v1, deprecated)
 │   ├── plot.py          # Multi-panel visualization
