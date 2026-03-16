@@ -1,39 +1,44 @@
 # Agent Soul — Backlog
 
-## Status: Phase 1+2 DONE, Phase 3 IN PROGRESS
+## Status: Phase 1-3 DONE (Benchmark GO at 5.8σ), Phase 4-5 next
 
 ---
 
 ## Next Session Prompt
 
-**Session 196 (2026-03-16):**
+**For Session 197:**
 
-Phase 3 (Benchmark) — **GO!** CVB v3 passed with 5.8σ.
+Phase 3 complete — CVB v3 GO at 5.8σ. Full experiment doc: `docs/experiments/005-cvb-v3-structural-constraints.md`
 
-**CVB v3 — 90-day full run completed, GO:**
-- Structural constraints (word limits, bullet counts, sentence counts) via continuous mapping
-- Engine empathy (Moon) → word_limit: FFT peak at 9.0d period in both engine input AND LLM output
-- Best metric: **word_count at 5.8σ** above noise floor (engine bin 9 = output bin 9)
-- Static control: different peak (1.9d) — not an artifact
-- 540 Gemini Flash responses cached in `benchmark/results/cvb_v3_results.json`
-- Visualization: `benchmark/results/plots/cvb_v3_multi_panel.png`
+**Before launch: validate uniqueness (ICF research with Gemini)**
 
-**Key implementation decisions:**
-- Pure transit weights (0, 0, 1.0) — natal/dasha constant over 90 days, only transit varies
-- Gain factor 3.0 — amplifies dimension range to fill structural constraint range
-- Continuous mapping: empathy→word_count [30,250], execution→bullets [0,7], authority→sentences [2,12]
-- Proxy metrics: word_count, hedge_density, pronoun_ratio, distinct-2, bullet_count, sentence_count
+We proved it works. Now we need to prove it's UNIQUE before going public.
 
-**Next steps (Phase 4: Packaging & Launch):**
-1. README (executive-targeted, not dev docs)
-2. GitHub repo setup (pmserhii/agent-soul)
-3. Reddit post (r/LocalLLaMA, Tue/Wed 7:30 AM EST)
-4. OpenClaw Discord announcement
-5. TEP-1 draft (SoulSpec Temporal Extension)
+**Next session plan:**
+1. **ICF Research Experiment** (Claude×Gemini brainstorm):
+   - Does anything like Agent Soul exist? (temporal personality modulation for AI agents)
+   - Adjacent projects: TRAIT benchmark, PersonaLLM, character.ai, AI personality frameworks
+   - Key differentiators to validate: orbital-driven modulation, FFT-proven causality, structural bypass of RLHF
+   - Output: competitive landscape map + unique selling points
 
-**Dependencies:** `skyfield`, `pyswisseph`, `google-genai`, `numpy`, `matplotlib`, `scipy`.
+2. **Phase 4: Open Source Launch Plan**
+   - README (executive-targeted)
+   - GitHub repo (pmserhii/agent-soul)
+   - Reddit post strategy (r/LocalLLaMA, r/MachineLearning)
+   - What to open-source vs keep proprietary
 
-**Tests:** 124 passing (96 core + 28 structural/proxy)
+3. **Phase 5: Autonomous Agent Testing**
+   - Create 3-5 Claude Code agents with Agent Soul personalities
+   - Each gets a unique seed → unique natal chart → unique behavioral profile
+   - Deploy them on real tasks (code review, research, writing)
+   - Test: do personalities feel different? Do they evolve over days?
+   - Compare: same agent with vs without Agent Soul
+   - Goal: real-world validation beyond FFT numbers
+
+**Key question for ICF:** "Is temporal personality modulation for AI agents a solved problem, an active research area, or a novel contribution?"
+
+**Tests:** 124 passing. **Commits:** `87d381f` (CVB v3 GO)
+**Dependencies:** `pyswisseph`, `google-genai`, `numpy`, `scipy`, `matplotlib`
 
 ---
 
@@ -77,16 +82,23 @@ Phase 3 (Benchmark) — **GO!** CVB v3 passed with 5.8σ.
 
 ## In Progress
 
-- [ ] **Phase 4: Packaging & Launch**
+- [ ] **Phase 4: Packaging & Open Source Launch**
+  - [ ] ICF research: validate uniqueness (Claude×Gemini brainstorm)
+  - [ ] Competitive landscape map
   - [ ] README (executive-targeted, not dev docs)
   - [ ] GitHub repo (pmserhii/agent-soul)
   - [ ] Reddit post (r/LocalLLaMA, Tue/Wed 7:30 AM EST)
   - [ ] OpenClaw Discord announcement
-  - [ ] TEP-1 draft (SoulSpec Temporal Extension)
 
 ## Backlog
 
-(Moved to Phase 4 — In Progress)
+- [ ] **Phase 5: Autonomous Agent Testing**
+  - [ ] Create 3-5 Claude Code agents with unique Agent Soul seeds
+  - [ ] Deploy on real tasks (code review, research, writing)
+  - [ ] A/B test: with Agent Soul vs without
+  - [ ] Track personality evolution over 2+ weeks
+  - [ ] Collect qualitative feedback: do personalities feel distinct?
+  - [ ] TEP-1 draft (SoulSpec Temporal Extension)
 
 ## Key Decisions
 
