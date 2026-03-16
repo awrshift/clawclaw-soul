@@ -1,0 +1,37 @@
+{
+  "go": true,
+  "engine_period_days": 9.0,
+  "engine_bin": 9,
+  "best_metric": "word_count",
+  "best_sigma": 5.7656619127549344,
+  "alignments": {
+    "word_count": {
+      "output_period": 9.0,
+      "output_bin": 9,
+      "sigma": 5.7656619127549344,
+      "aligned": true,
+      "static_different": true
+    },
+    "hedge_density": {
+      "output_period": 30.0,
+      "output_bin": 2,
+      "sigma": 0.9135480741264506,
+      "aligned": false,
+      "static_different": true
+    },
+    "bullet_count": {
+      "output_period": 90.0,
+      "output_bin": 0,
+      "sigma": 12.029485280364707,
+      "aligned": false,
+      "static_different": true
+    },
+    "sentence_count": {
+      "output_period": 90.0,
+      "output_bin": 0,
+      "sigma": 10.503710162407435,
+      "aligned": false,
+      "static_different": true
+    }
+  }
+}

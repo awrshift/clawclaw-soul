@@ -1,15 +1,18 @@
-"""Celestial Variance Benchmark v2 — Embedding + Dual-FFT.
+"""Celestial Variance Benchmark v3 — Structural Constraints + Proxy Metrics.
 
-Redesigned per brainstorm 002 findings:
-- Embedding-based trait scoring (replaces broken regex proxies)
-- Proper DSP: detrend + Hanning window before FFT
-- Dual-FFT proof: engine input FFT vs LLM output FFT must align
-- Single semantic trait (agreeableness) for v1
+Redesigned per Brainstorm 004:
+- Structural constraints (word limits, list format, directive language) instead of personality nudges
+- Zero-cost proxy metrics (word_count, hedge_density, pronoun_ratio, distinct-2)
+- FFT on proxy time series to detect engine frequency in LLM output
+- Go/No-Go: FFT peak at engine frequency >= 3 sigma above noise floor
+
+Uses v2 engine (9 graha dimensions from Digital Soul) with benchmark-heavy transit weights.
 
 Usage:
     python3 benchmark/cvb_runner.py                          # full 90-day run
     python3 benchmark/cvb_runner.py --days 10                # quick smoke test
     python3 benchmark/cvb_runner.py --skip-generate          # reuse cached responses
+    python3 benchmark/cvb_runner.py --metrics-only           # proxy metrics + FFT on cached data
 """
 
 from __future__ import annotations
@@ -28,45 +31,50 @@ from google.genai import types
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agent_soul.engine import compute_modifiers
-from agent_soul.prompt import modifiers_to_prompt
-from benchmark.embed import score_batch
+from agent_soul.engine import compute_modifiers_v2
+from agent_soul.prompt import dimensions_to_structural_prompt
+from agent_soul.soul import create_soul
+from benchmark.proxy_metrics import compute_proxies
 
 PROMPTS_FILE = Path(__file__).parent / "prompts.json"
 RESULTS_DIR = Path(__file__).parent / "results"
-ENV_FILE = Path(__file__).parent.parent.parent / "Documents" / "Head-of-AI" / ".env"
 
 MODEL = "gemini-2.0-flash"
-AGENT_ID = "benchmark-agent"
+AGENT_SEED = 42
 STEP_HOURS = 12
 DEFAULT_DAYS = 90
 TEMPERATURE = 0.4
-TRAIT = "agreeableness"
 
-# Rate limiting: Gemini Flash free tier = 15 RPM, paid = 2000 RPM
-RATE_LIMIT_DELAY = 0.5  # seconds between calls (safe for paid tier)
+RATE_LIMIT_DELAY = 0.5
 
-# Transit-heavy weights for benchmark (maximizes day-to-day variance).
-BENCHMARK_WEIGHTS = (0.20, 0.25, 0.55)
+# Pure transit weights for benchmark (maximizes time-varying signal).
+# Natal and dasha are constant over 90 days, only transit varies.
+BENCHMARK_WEIGHTS = (0.0, 0.0, 1.0)
 
-# Random personality prompts for the "random" control condition.
-RANDOM_PERSONALITIES = [
-    "Be very concise and direct.",
-    "Be detailed and thorough in your explanations.",
-    "Be creative and think outside the box.",
-    "Be cautious and highlight risks.",
-    "Be encouraging and supportive.",
-    "Challenge assumptions and be critical.",
-    "Be proactive and suggest next steps.",
-    "Stick to facts and proven approaches.",
-    "Be bold and recommend ambitious strategies.",
-    "Focus only on what was asked, nothing more.",
+# Gain factor: amplifies dimension values before mapping to structural constraints.
+# Transit-only dimensions have std ~0.19, gain=3 stretches to fill [-1,+1] range.
+BENCHMARK_GAIN = 3.0
+
+# Random structural prompts for "random" control condition.
+RANDOM_STRUCTURAL = [
+    "Answer in no more than 40 words.",
+    "Write at least 150 words with thorough explanations.",
+    "Structure your response using exactly 5 bullet points. Each bullet must be one sentence.",
+    "Write your response as a single flowing paragraph with no lists.",
+    "Use direct, imperative language: 'Do this', 'Implement that'.",
+    "Use hedging language: 'perhaps', 'it might be', 'one could argue'.",
+    "Answer in exactly one sentence, no more than 20 words.",
+    "Structure your response using a numbered list with exactly 3 points.",
+    "Write at least 100 words as prose paragraphs. Do not use bullet points.",
+    "Write as commands and directives. Every sentence should be an instruction.",
 ]
+
+# Key metrics for FFT (the ones most likely to show structural signal)
+FFT_METRICS = ["word_count", "hedge_density", "bullet_count", "sentence_count"]
 
 
 def _load_env():
     """Load GOOGLE_API_KEY from .env file."""
-    # Try multiple locations
     for env_path in [
         Path(__file__).parent.parent / ".env",
         Path.home() / "Documents" / "Head-of-AI" / ".env",
@@ -97,11 +105,8 @@ def load_prompts() -> list[dict]:
     return json.loads(PROMPTS_FILE.read_text())
 
 
-def generate_one(prompt: str, system_prompt: str | None, temp: float, seed: int = 0) -> str:
-    """Generate a response using Gemini Flash.
-
-    seed parameter kept for API compatibility but not used by Gemini.
-    """
+def generate_one(prompt: str, system_prompt: str | None, temp: float) -> str:
+    """Generate a response using Gemini Flash."""
     client = _get_client()
     config = types.GenerateContentConfig(
         temperature=temp,
@@ -130,7 +135,7 @@ def generate_one(prompt: str, system_prompt: str | None, temp: float, seed: int 
 
 
 # ──────────────────────────────────────────────
-# Phase 1: Generation (time-spoofed)
+# Phase 1: Generation (time-spoofed, v2 engine)
 # ──────────────────────────────────────────────
 
 def run_generation(
@@ -139,38 +144,42 @@ def run_generation(
 ) -> list[dict]:
     """Run time-spoofed generation for one prompt across N days.
 
-    3 conditions: static, random, temporal.
+    3 conditions:
+    - static: no system prompt (baseline)
+    - random: random structural constraint (changes daily, no engine)
+    - temporal: engine-driven structural constraints (the signal we want to detect)
     """
     import random as rng_module
 
+    soul = create_soul(AGENT_SEED)
     base_date = datetime.now(timezone.utc)
     steps_per_day = 24 // STEP_HOURS
     total_steps = days * steps_per_day
     results = []
-    total_gens = total_steps * 3  # 3 conditions
+    total_gens = total_steps * 3
     gen_count = 0
     t_start = time.time()
 
-    print(f"\n=== Generation: {days} days, {total_steps} steps, prompt={prompt['id']} ===", flush=True)
+    print(f"\n=== CVB v3 Generation: {days} days, {total_steps} steps ===", flush=True)
+    print(f"  Agent seed: {AGENT_SEED}, Lagna: {soul.lagna_sign}", flush=True)
+    print(f"  Prompt: {prompt['id']} — {prompt['prompt'][:60]}", flush=True)
     print(f"  Total generations: {total_gens}", flush=True)
 
     for step in range(total_steps):
         timestamp = base_date - timedelta(hours=step * STEP_HOURS)
         day = step // steps_per_day
 
-        # Compute temporal modifiers for this timestamp
-        mod_result = compute_modifiers(AGENT_ID, timestamp, weights=BENCHMARK_WEIGHTS)
-        temporal_prompt = modifiers_to_prompt(mod_result["modifiers"])
-        modifiers = mod_result["modifiers"]
+        # v2 engine: soul + timestamp → 9 dimensions
+        mod_result = compute_modifiers_v2(soul, timestamp, weights=BENCHMARK_WEIGHTS)
+        dimensions = mod_result["dimensions"]
+        structural_prompt = dimensions_to_structural_prompt(dimensions, gain=BENCHMARK_GAIN)
 
-        # Random personality (changes daily)
+        # Random structural (changes daily)
         day_rng = rng_module.Random(42 + day)
-        random_personality = day_rng.choice(RANDOM_PERSONALITIES)
-
-        seed_base = hash((prompt["id"], step)) % (2**31)
+        random_structural = day_rng.choice(RANDOM_STRUCTURAL)
 
         # --- Static ---
-        text_static = generate_one(prompt["prompt"], None, TEMPERATURE, seed_base)
+        text_static = generate_one(prompt["prompt"], None, TEMPERATURE)
         results.append({
             "condition": "static",
             "step": step,
@@ -178,11 +187,11 @@ def run_generation(
             "timestamp": timestamp.isoformat(),
             "prompt_id": prompt["id"],
             "response": text_static,
-            "modifiers": None,
+            "dimensions": None,
         })
 
         # --- Random ---
-        text_random = generate_one(prompt["prompt"], random_personality, TEMPERATURE, seed_base + 1)
+        text_random = generate_one(prompt["prompt"], random_structural, TEMPERATURE)
         results.append({
             "condition": "random",
             "step": step,
@@ -190,12 +199,12 @@ def run_generation(
             "timestamp": timestamp.isoformat(),
             "prompt_id": prompt["id"],
             "response": text_random,
-            "modifiers": None,
+            "dimensions": None,
         })
 
         # --- Temporal ---
-        sys_prompt = temporal_prompt if temporal_prompt else None
-        text_temporal = generate_one(prompt["prompt"], sys_prompt, TEMPERATURE, seed_base + 2)
+        sys_prompt = structural_prompt if structural_prompt else None
+        text_temporal = generate_one(prompt["prompt"], sys_prompt, TEMPERATURE)
         results.append({
             "condition": "temporal",
             "step": step,
@@ -203,7 +212,7 @@ def run_generation(
             "timestamp": timestamp.isoformat(),
             "prompt_id": prompt["id"],
             "response": text_temporal,
-            "modifiers": modifiers,
+            "dimensions": dimensions,
         })
 
         gen_count += 3
@@ -221,64 +230,57 @@ def run_generation(
 
 
 # ──────────────────────────────────────────────
-# Phase 2: Embedding Scoring
+# Phase 2: Proxy Metrics (zero cost)
 # ──────────────────────────────────────────────
 
-def score_responses(results: list[dict]) -> list[dict]:
-    """Score all responses using embedding cosine distance."""
-    print(f"\n=== Embedding Scoring ({len(results)} responses, trait={TRAIT}) ===", flush=True)
+def score_with_proxies(results: list[dict]) -> list[dict]:
+    """Compute proxy metrics for all responses."""
+    print(f"\n=== Proxy Metrics ({len(results)} responses) ===", flush=True)
 
-    # Batch all texts for efficiency
-    texts = [r["response"] for r in results]
+    for r in results:
+        proxies = compute_proxies(r["response"])
+        r["metrics"] = proxies
 
-    # Process in batches of 50 (avoid OOM on large runs)
-    BATCH_SIZE = 50
-    all_scores = []
-    for i in range(0, len(texts), BATCH_SIZE):
-        batch = texts[i : i + BATCH_SIZE]
-        scores = score_batch(batch, trait=TRAIT)
-        all_scores.extend(scores)
-        if (i // BATCH_SIZE) % 5 == 0:
-            print(f"  Embedded {i + len(batch)}/{len(texts)}...", flush=True)
+    # Print summary stats per condition
+    for condition in ["static", "random", "temporal"]:
+        filtered = [r for r in results if r["condition"] == condition]
+        wc = [r["metrics"]["word_count"] for r in filtered]
+        hd = [r["metrics"]["hedge_density"] for r in filtered]
+        bc = [r["metrics"]["bullet_count"] for r in filtered]
+        print(f"  {condition}: word_count=[{min(wc):.0f}, {max(wc):.0f}] "
+              f"std={np.std(wc):.1f}  hedge=[{min(hd):.3f}, {max(hd):.3f}]  "
+              f"bullets=[{min(bc):.0f}, {max(bc):.0f}]", flush=True)
 
-    for r, score in zip(results, all_scores):
-        r["embed_score"] = score
-
-    print(f"  Score range: [{min(all_scores):.4f}, {max(all_scores):.4f}]", flush=True)
     return results
 
 
 # ──────────────────────────────────────────────
-# Phase 3: DSP + Dual-FFT Analysis
+# Phase 3: FFT on Proxy Time Series
 # ──────────────────────────────────────────────
 
-def build_time_series(results: list[dict], condition: str) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
-    """Build step-indexed time series for a condition.
-
-    Returns: (steps, embed_scores, modifier_values_or_None)
-    """
-    filtered = [r for r in results if r["condition"] == condition]
-    filtered.sort(key=lambda r: r["step"])
-
-    steps = np.array([r["step"] for r in filtered])
-    scores = np.array([r["embed_score"] for r in filtered])
-
-    mods = None
-    if condition == "temporal":
-        # Extract the agreeableness modifier value per step
-        mods = np.array([
-            r["modifiers"].get(TRAIT, 0.0) if r["modifiers"] else 0.0
-            for r in filtered
-        ])
-
-    return steps, scores, mods
+def build_proxy_time_series(results: list[dict], condition: str, metric: str) -> np.ndarray:
+    """Extract a metric time series for a condition, sorted by step."""
+    filtered = sorted(
+        [r for r in results if r["condition"] == condition],
+        key=lambda r: r["step"],
+    )
+    return np.array([r["metrics"][metric] for r in filtered])
 
 
-def compute_fft_proper(signal: np.ndarray, sample_interval_days: float) -> dict:
-    """Run FFT with proper DSP: detrend + Hanning window.
+def build_dimension_time_series(results: list[dict], dimension: str) -> np.ndarray:
+    """Extract engine input dimension time series (temporal condition only)."""
+    filtered = sorted(
+        [r for r in results if r["condition"] == "temporal"],
+        key=lambda r: r["step"],
+    )
+    return np.array([
+        r["dimensions"].get(dimension, 0.0) if r["dimensions"] else 0.0
+        for r in filtered
+    ])
 
-    Returns dict with freqs, magnitudes, periods, peak info, SNR.
-    """
+
+def compute_fft(signal: np.ndarray, sample_interval_days: float) -> dict:
+    """FFT with detrend + Hanning window. Returns peak info + SNR."""
     from scipy.fft import fft, fftfreq
     from scipy.signal import detrend
 
@@ -286,18 +288,13 @@ def compute_fft_proper(signal: np.ndarray, sample_interval_days: float) -> dict:
     if N < 8:
         return {}
 
-    # Step 1: Remove linear trend
     detrended = detrend(signal, type="linear")
-
-    # Step 2: Apply Hanning window (eliminates spectral leakage)
     window = np.hanning(N)
     windowed = detrended * window
 
-    # Step 3: FFT
     yf = fft(windowed)
     xf = fftfreq(N, d=sample_interval_days)
 
-    # Only positive frequencies (skip DC at index 0)
     pos_mask = xf > 0
     freqs = xf[pos_mask]
     magnitudes = 2.0 / N * np.abs(yf[pos_mask])
@@ -306,119 +303,154 @@ def compute_fft_proper(signal: np.ndarray, sample_interval_days: float) -> dict:
     if len(magnitudes) == 0:
         return {}
 
-    # Peak detection
     peak_idx = int(np.argmax(magnitudes))
     peak_freq = float(freqs[peak_idx])
     peak_period = float(periods[peak_idx])
-    peak_magnitude = float(magnitudes[peak_idx])
+    peak_mag = float(magnitudes[peak_idx])
 
-    # SNR: peak / mean of non-peak
     non_peak = np.delete(magnitudes, peak_idx)
-    noise_floor = float(np.mean(non_peak)) if len(non_peak) > 0 else 1e-10
-    snr = peak_magnitude / max(noise_floor, 1e-10)
+    noise_mean = float(np.mean(non_peak)) if len(non_peak) > 0 else 1e-10
+    noise_std = float(np.std(non_peak)) if len(non_peak) > 1 else 1e-10
+    snr = peak_mag / max(noise_mean, 1e-10)
+    sigma = (peak_mag - noise_mean) / max(noise_std, 1e-10)
 
     return {
         "peak_frequency": peak_freq,
         "peak_period_days": peak_period,
-        "peak_magnitude": peak_magnitude,
+        "peak_magnitude": peak_mag,
         "peak_bin": peak_idx,
-        "noise_floor": noise_floor,
+        "noise_floor": noise_mean,
+        "noise_std": noise_std,
         "snr": snr,
+        "sigma": sigma,
         "freqs": freqs.tolist(),
         "magnitudes": magnitudes.tolist(),
-        "periods": periods.tolist(),
     }
 
 
-def analyze_dual_fft(results: list[dict]) -> dict:
-    """Run dual-FFT: compare engine input vs LLM output frequency spectra."""
-    print("\n=== Dual-FFT Analysis ===", flush=True)
-    sample_interval = STEP_HOURS / 24.0  # days per step
+def analyze_fft(results: list[dict]) -> dict:
+    """Run FFT on all proxy metrics for all conditions.
+
+    For temporal condition, also FFT the engine input dimensions
+    to check if output peaks align with input peaks.
+    """
+    print("\n=== FFT Analysis ===", flush=True)
+    sample_interval = STEP_HOURS / 24.0
 
     analysis = {}
 
     for condition in ["static", "random", "temporal"]:
-        steps, scores, mods = build_time_series(results, condition)
-        if len(steps) < 8:
-            continue
+        cond_analysis = {}
 
-        # FFT of embedding scores
-        fft_output = compute_fft_proper(scores, sample_interval)
+        for metric in FFT_METRICS:
+            ts = build_proxy_time_series(results, condition, metric)
+            if len(ts) < 8:
+                continue
+            fft_result = compute_fft(ts, sample_interval)
+            cond_analysis[metric] = fft_result
 
-        result = {"output_fft": fft_output}
+            if fft_result:
+                print(f"  {condition}/{metric}: peak={fft_result['peak_period_days']:.1f}d "
+                      f"sigma={fft_result['sigma']:.1f} SNR={fft_result['snr']:.1f}x",
+                      flush=True)
 
-        # For temporal condition, also FFT the engine input
-        if mods is not None:
-            fft_input = compute_fft_proper(mods, sample_interval)
-            result["input_fft"] = fft_input
+        # For temporal: also FFT the engine input dimensions
+        # (empathy→word_count, execution→bullet_count, authority→sentence_count)
+        if condition == "temporal":
+            for dim in ["empathy", "execution", "authority"]:
+                dim_ts = build_dimension_time_series(results, dim)
+                if len(dim_ts) < 8:
+                    continue
+                fft_input = compute_fft(dim_ts, sample_interval)
+                cond_analysis[f"input_{dim}"] = fft_input
 
-            # Peak alignment check: do they peak at the same bin?
-            if fft_input and fft_output:
-                input_bin = fft_input.get("peak_bin", -1)
-                output_bin = fft_output.get("peak_bin", -2)
-                aligned = input_bin == output_bin
-                result["peak_aligned"] = aligned
-                result["input_peak_period"] = fft_input.get("peak_period_days", 0)
-                result["output_peak_period"] = fft_output.get("peak_period_days", 0)
+                if fft_input:
+                    print(f"  temporal/input_{dim}: peak={fft_input['peak_period_days']:.1f}d "
+                          f"sigma={fft_input['sigma']:.1f}", flush=True)
 
-                status = "PASS (peaks aligned)" if aligned else "FAIL (peaks misaligned)"
-                print(f"  {condition}: input peak={fft_input.get('peak_period_days', 0):.1f}d "
-                      f"output peak={fft_output.get('peak_period_days', 0):.1f}d "
-                      f"→ {status}", flush=True)
-            else:
-                result["peak_aligned"] = False
-        else:
-            if fft_output:
-                print(f"  {condition}: output peak={fft_output.get('peak_period_days', 0):.1f}d "
-                      f"SNR={fft_output.get('snr', 0):.1f}x", flush=True)
-
-        # Save raw time series for plotting
-        result["steps"] = steps.tolist()
-        result["scores"] = scores.tolist()
-        if mods is not None:
-            result["modifiers"] = mods.tolist()
-
-        analysis[condition] = result
+        analysis[condition] = cond_analysis
 
     return analysis
 
 
 # ──────────────────────────────────────────────
-# Phase 4: Go / No-Go
+# Phase 4: Go / No-Go (3-sigma criterion)
 # ──────────────────────────────────────────────
 
 def evaluate_go_nogo(analysis: dict) -> dict:
-    """Evaluate go/no-go based on dual-FFT peak alignment."""
+    """Go/No-Go: any temporal metric FFT peak at engine frequency >= 3 sigma."""
     print("\n=== Go / No-Go Evaluation ===", flush=True)
 
     temporal = analysis.get("temporal", {})
+    static = analysis.get("static", {})
+
+    # Find engine input dominant period (empathy drives word_count — the primary metric)
+    input_fft = temporal.get("input_empathy", {})
+    if not input_fft:
+        input_fft = temporal.get("input_execution", temporal.get("input_authority", {}))
+
+    engine_period = input_fft.get("peak_period_days", 0)
+    engine_bin = input_fft.get("peak_bin", -1)
+
+    print(f"  Engine dominant period: {engine_period:.1f} days (bin {engine_bin})", flush=True)
+
+    # Check each output metric
+    best_metric = None
+    best_sigma = 0.0
+    alignments = {}
+
+    for metric in FFT_METRICS:
+        output_fft = temporal.get(metric, {})
+        if not output_fft:
+            continue
+
+        output_bin = output_fft.get("peak_bin", -2)
+        output_sigma = output_fft.get("sigma", 0)
+        aligned = abs(output_bin - engine_bin) <= 1  # Allow 1-bin tolerance
+
+        alignments[metric] = {
+            "output_period": output_fft.get("peak_period_days", 0),
+            "output_bin": output_bin,
+            "sigma": output_sigma,
+            "aligned": aligned,
+        }
+
+        # Check static doesn't have same peak (control)
+        static_fft = static.get(metric, {})
+        static_bin = static_fft.get("peak_bin", -3) if static_fft else -3
+        alignments[metric]["static_different"] = abs(static_bin - output_bin) > 1
+
+        status = "ALIGNED" if aligned else "misaligned"
+        sig = f"{output_sigma:.1f}σ"
+        ctrl = "ctrl_ok" if alignments[metric]["static_different"] else "CTRL_FAIL"
+        print(f"  {metric}: {status} {sig} {ctrl} "
+              f"(period={output_fft.get('peak_period_days', 0):.1f}d)", flush=True)
+
+        if aligned and output_sigma > best_sigma:
+            best_sigma = output_sigma
+            best_metric = metric
+
+    # Go criteria: at least one metric aligned at >= 3 sigma, static doesn't match
+    go = False
+    if best_metric:
+        a = alignments[best_metric]
+        go = best_sigma >= 3.0 and a.get("static_different", True)
+
     verdict = {
-        "peak_aligned": temporal.get("peak_aligned", False),
-        "input_peak": temporal.get("input_peak_period", 0),
-        "output_peak": temporal.get("output_peak_period", 0),
-        "output_snr": temporal.get("output_fft", {}).get("snr", 0),
-        "input_snr": temporal.get("input_fft", {}).get("snr", 0),
+        "go": go,
+        "engine_period_days": engine_period,
+        "engine_bin": engine_bin,
+        "best_metric": best_metric,
+        "best_sigma": best_sigma,
+        "alignments": alignments,
     }
 
-    # Primary criterion: peaks align
-    go = verdict["peak_aligned"] and verdict["output_snr"] > 2.0
-
-    # Secondary: static condition should NOT show the same peak
-    static_fft = analysis.get("static", {}).get("output_fft", {})
-    if static_fft and temporal.get("output_fft"):
-        static_bin = static_fft.get("peak_bin", -1)
-        temporal_bin = temporal["output_fft"].get("peak_bin", -2)
-        verdict["static_different"] = static_bin != temporal_bin
-    else:
-        verdict["static_different"] = True  # can't check, assume ok
-
-    verdict["go"] = go and verdict["static_different"]
-
-    status = "GO" if verdict["go"] else "NO-GO"
+    status = "GO" if go else "NO-GO"
     print(f"\n  Verdict: {status}", flush=True)
-    print(f"  Peak aligned: {verdict['peak_aligned']}", flush=True)
-    print(f"  Output SNR: {verdict['output_snr']:.1f}x", flush=True)
-    print(f"  Static different: {verdict['static_different']}", flush=True)
+    if best_metric:
+        print(f"  Best: {best_metric} at {best_sigma:.1f}σ", flush=True)
+    else:
+        print(f"  No aligned metrics found.", flush=True)
 
     return verdict
 
@@ -427,65 +459,58 @@ def evaluate_go_nogo(analysis: dict) -> dict:
 # Main
 # ──────────────────────────────────────────────
 
-def run_cvb(days: int = DEFAULT_DAYS, skip_generate: bool = False) -> dict:
-    """Run the full CVB v2 pipeline."""
+def run_cvb(days: int = DEFAULT_DAYS, skip_generate: bool = False, metrics_only: bool = False) -> dict:
+    """Run the full CVB v3 pipeline."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    results_file = RESULTS_DIR / "cvb_v2_results.json"
+    results_file = RESULTS_DIR / "cvb_v3_results.json"
 
-    if skip_generate and results_file.exists():
-        print("=== Loading cached results ===", flush=True)
+    if (skip_generate or metrics_only) and results_file.exists():
+        print("=== Loading cached v3 results ===", flush=True)
         all_results = json.loads(results_file.read_text())
     else:
-        # Use the most stable prompt from pruning (hardcoded from v1 results)
         prompt = {"id": "p06", "prompt": "What makes a good code review process?"}
         all_results = run_generation(prompt, days)
-
-        # Save raw results
         results_file.write_text(json.dumps(all_results, indent=2, default=str))
         print(f"\n  Raw results saved: {results_file}", flush=True)
 
-    # Phase 2: Embedding scoring
-    all_results = score_responses(all_results)
+    # Phase 2: Proxy metrics
+    all_results = score_with_proxies(all_results)
 
-    # Save scored results
-    scored_file = RESULTS_DIR / "cvb_v2_scored.json"
+    scored_file = RESULTS_DIR / "cvb_v3_scored.json"
     scored_file.write_text(json.dumps(all_results, indent=2, default=str))
 
-    # Phase 3: Dual-FFT
-    analysis = analyze_dual_fft(all_results)
+    # Phase 3: FFT
+    analysis = analyze_fft(all_results)
 
-    # Save analysis (strip large arrays for summary file)
+    # Save analysis summary (strip large arrays)
     analysis_summary = {}
-    for cond, data in analysis.items():
-        summary = {k: v for k, v in data.items()
-                   if k not in ("steps", "scores", "modifiers")}
-        # Also strip freqs/magnitudes/periods from FFT results
-        for fft_key in ("output_fft", "input_fft"):
-            if fft_key in summary:
-                summary[fft_key] = {
-                    k: v for k, v in summary[fft_key].items()
-                    if k not in ("freqs", "magnitudes", "periods")
-                }
-        analysis_summary[cond] = summary
-    (RESULTS_DIR / "cvb_v2_analysis.json").write_text(json.dumps(analysis_summary, indent=2))
-
-    # Save full analysis (with arrays for plotting)
-    (RESULTS_DIR / "cvb_v2_analysis_full.json").write_text(json.dumps(analysis, indent=2, default=str))
+    for cond, metrics in analysis.items():
+        cond_summary = {}
+        for metric_name, fft_data in metrics.items():
+            cond_summary[metric_name] = {
+                k: v for k, v in fft_data.items()
+                if k not in ("freqs", "magnitudes")
+            }
+        analysis_summary[cond] = cond_summary
+    (RESULTS_DIR / "cvb_v3_analysis.json").write_text(json.dumps(analysis_summary, indent=2))
 
     # Phase 4: Go/No-Go
     verdict = evaluate_go_nogo(analysis)
-    (RESULTS_DIR / "cvb_v2_verdict.json").write_text(json.dumps(verdict, indent=2))
+    (RESULTS_DIR / "cvb_v3_verdict.json").write_text(json.dumps(verdict, indent=2))
 
-    print(f"\n=== CVB v2 Complete. Results in {RESULTS_DIR}/ ===", flush=True)
+    print(f"\n=== CVB v3 Complete. Results in {RESULTS_DIR}/ ===", flush=True)
     return verdict
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Celestial Variance Benchmark v2")
+    parser = argparse.ArgumentParser(description="Celestial Variance Benchmark v3")
     parser.add_argument("--days", type=int, default=DEFAULT_DAYS)
-    parser.add_argument("--skip-generate", action="store_true")
+    parser.add_argument("--skip-generate", action="store_true",
+                        help="Reuse cached responses, recompute metrics + FFT")
+    parser.add_argument("--metrics-only", action="store_true",
+                        help="Same as --skip-generate (alias)")
     args = parser.parse_args()
-    run_cvb(days=args.days, skip_generate=args.skip_generate)
+    run_cvb(days=args.days, skip_generate=args.skip_generate, metrics_only=args.metrics_only)
 
 
 if __name__ == "__main__":

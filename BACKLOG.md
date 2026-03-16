@@ -6,31 +6,34 @@
 
 ## Next Session Prompt
 
-**Session 195 (2026-03-16):**
+**Session 196 (2026-03-16):**
 
-Phase 3.5 (Digital Soul) DONE. Phase 3 (Benchmark) pivoting per Brainstorm 004.
+Phase 3 (Benchmark) — **GO!** CVB v3 passed with 5.8σ.
 
-**CVB v2 — 90-day full run completed, NO-GO:**
-- Embedding scoring (both Ollama nomic + Gemini embedding-001) too flat — score range 0.09
-- Root cause: embeddings measure TOPIC not TONE. RLHF flattens personality nudges
-- 540 Gemini Flash responses cached in `benchmark/results/cvb_v2_results.json` (reusable)
+**CVB v3 — 90-day full run completed, GO:**
+- Structural constraints (word limits, bullet counts, sentence counts) via continuous mapping
+- Engine empathy (Moon) → word_limit: FFT peak at 9.0d period in both engine input AND LLM output
+- Best metric: **word_count at 5.8σ** above noise floor (engine bin 9 = output bin 9)
+- Static control: different peak (1.9d) — not an artifact
+- 540 Gemini Flash responses cached in `benchmark/results/cvb_v3_results.json`
+- Visualization: `benchmark/results/plots/cvb_v3_multi_panel.png`
 
-**Brainstorm 004 decision: structural constraints + multi-proxy scoring**
-Transcripts: `docs/experiments/004-scoring-brainstorm-r{1,2,3}.md`
+**Key implementation decisions:**
+- Pure transit weights (0, 0, 1.0) — natal/dasha constant over 90 days, only transit varies
+- Gain factor 3.0 — amplifies dimension range to fill structural constraint range
+- Continuous mapping: empathy→word_count [30,250], execution→bullets [0,7], authority→sentences [2,12]
+- Proxy metrics: word_count, hedge_density, pronoun_ratio, distinct-2, bullet_count, sentence_count
 
-**Next steps (implement Brainstorm 004):**
-1. Update `prompt.py` — structural constraints instead of personality nudges
-   - compression → sentence/word limits ("Answer in exactly 2 sentences")
-   - analysis → detail level ("Use exactly 3 bullet points" vs "Write one paragraph")
-   - authority → directive vs advisory format
-2. Re-generate 540 responses with structural prompt variants
-3. Compute multi-proxy metrics (zero cost): word_count, hedge_density, pronoun_ratio, distinct-2
-4. FFT on proxy time series → check peak alignment at 9-day period
-5. Go/No-Go: FFT peak ≥ 3σ above noise floor
-6. Fallback: structured JSON extraction via Gemini Flash ($0.50)
-- `tests/test_engine_v2.py` — 15 tests
+**Next steps (Phase 4: Packaging & Launch):**
+1. README (executive-targeted, not dev docs)
+2. GitHub repo setup (pmserhii/agent-soul)
+3. Reddit post (r/LocalLLaMA, Tue/Wed 7:30 AM EST)
+4. OpenClaw Discord announcement
+5. TEP-1 draft (SoulSpec Temporal Extension)
 
-**Dependencies:** `skyfield`, `pyswisseph`, `ollama`, `numpy`, `matplotlib`, `scipy`. Models: `llama3.1:8b`, `nomic-embed-text`.
+**Dependencies:** `skyfield`, `pyswisseph`, `google-genai`, `numpy`, `matplotlib`, `scipy`.
+
+**Tests:** 124 passing (96 core + 28 structural/proxy)
 
 ---
 
@@ -54,6 +57,16 @@ Transcripts: `docs/experiments/004-scoring-brainstorm-r{1,2,3}.md`
   - `benchmark/plot.py` — dual-pane (variance wave + FFT periodogram)
   - Smoke test running
 
+- [x] **Phase 3: Celestial Variance Benchmark — GO (5.8σ)**
+  - CVB v1 (regex proxies): FAIL — compliance_score constant, agreeableness r=0.0
+  - CVB v2 (embeddings): FAIL — cosine distance measures TOPIC not TONE, range 0.09
+  - **CVB v3 (structural constraints): GO** — word_count FFT peak at 9.0d, 5.8σ
+  - Brainstorms: 001 (PVI→CVB), 002 (v1→v2 redesign), 004 (v2→v3 structural pivot)
+  - Key insight: bypass RLHF by shifting signal from personality nudges to formatting rules
+  - Engine: pure transit weights (0,0,1), gain=3, continuous mapping (not discrete levels)
+  - Verification: 540 Gemini Flash responses, static control different peak (1.9d)
+  - 124 tests, commit TBD
+
 - [x] **Phase 3.5: Digital Soul — Full Natal Chart for Agents**
   - `soul.py`: random birth → pyswisseph natal chart → 9 graha dimensions + 12 house capabilities + 6 yogas
   - `engine.py`: `compute_modifiers_v2()` — natal + dasha + transit → 9 dimensions
@@ -64,22 +77,16 @@ Transcripts: `docs/experiments/004-scoring-brainstorm-r{1,2,3}.md`
 
 ## In Progress
 
-- [ ] **Phase 3: Celestial Variance Benchmark v2 (CVB)**
-  - [x] Brainstorm 002: CVB v1 results analysis → embedding + dual-FFT redesign
-  - [x] CVB v2 rewrite: embed.py, cvb_runner.py, plot.py
-  - [ ] CVB v2 smoke test (10 days, running)
-  - [ ] CVB v2 full run (90 days, ~4.5h compute)
-  - [ ] Go/No-Go evaluation
-  - Go/No-Go: FFT peaks of engine input and LLM output align at same frequency bin
-
-## Backlog
-
 - [ ] **Phase 4: Packaging & Launch**
   - [ ] README (executive-targeted, not dev docs)
   - [ ] GitHub repo (pmserhii/agent-soul)
   - [ ] Reddit post (r/LocalLLaMA, Tue/Wed 7:30 AM EST)
   - [ ] OpenClaw Discord announcement
   - [ ] TEP-1 draft (SoulSpec Temporal Extension)
+
+## Backlog
+
+(Moved to Phase 4 — In Progress)
 
 ## Key Decisions
 
@@ -121,6 +128,12 @@ Hierarchy: Natal (ceiling) > Dasha (throttle) > Transit (trigger).
 Anti-patterns: no malicious behavior from malefics, no caste/gender encoding,
 no hard override of user prompts. Full details: docs/experiments/003-*.md
 
+**2026-03-16 — CVB v3 GO (Brainstorm 004 implemented):**
+Structural constraints replace personality nudges. Continuous mapping (not discrete levels)
+with gain=3 amplification. Pure transit weights (0,0,1) for benchmark. empathy→word_count
+is the causal channel: FFT peak at 9.0d in both engine input and LLM output (5.8σ).
+Static control peaks at 1.9d (different) → not an artifact.
+
 ## Project Structure
 
 ```
@@ -134,14 +147,16 @@ no hard override of user prompts. Full details: docs/experiments/003-*.md
 │   ├── prompt.py        # Modifier → LLM prompt (7 levels)
 │   ├── temporal_md.py   # TEMPORAL.md generator
 │   └── refresh.py       # CLI + OpenClaw heartbeat
-├── benchmark/           # CVB Suite
-│   ├── cvb_runner.py    # Main benchmark (time-spoofed FFT)
-│   ├── traits.py        # Rule-based trait proxies
-│   ├── plot.py          # Dual-pane visualization
+├── benchmark/           # CVB Suite v3
+│   ├── cvb_runner.py    # Main benchmark (structural constraints + FFT)
+│   ├── proxy_metrics.py # Zero-cost proxy metrics (word_count, hedge, etc.)
+│   ├── embed.py         # Gemini embedding-001 (v2, deprecated)
+│   ├── traits.py        # Rule-based trait proxies (v1, deprecated)
+│   ├── plot.py          # Multi-panel visualization
 │   ├── metrics.py       # MATTR + legacy metrics
 │   └── prompts.json     # 20 personality-neutral prompts
 ├── openclaw/            # OpenClaw skill files
-├── tests/               # 52 tests (all passing)
+├── tests/               # 124 tests (all passing)
 ├── docs/experiments/    # Brainstorm transcripts
 ├── BACKLOG.md           # ← this file
 ├── pyproject.toml       # setuptools, deps: skyfield

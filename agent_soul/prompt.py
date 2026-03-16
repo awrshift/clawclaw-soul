@@ -186,6 +186,42 @@ YOGA_PROMPTS: dict[str, str] = {
 # Max active dimensions in v2 prompt
 MAX_ACTIVE_DIMENSIONS = 4
 
+# ──────────────────────────────────────────────
+# v2-structural: Hard formatting constraints (Brainstorm 004)
+# ──────────────────────────────────────────────
+# Instead of "be supportive" (RLHF flattens), use "use exactly 3 bullet points"
+# (impossible to ignore). Measurable via word count, structure detection.
+
+STRUCTURAL_CONSTRAINTS: dict[str, dict[int, str]] = {
+    "compression": {
+        -3: "Write a comprehensive response of at least 200 words with detailed examples.",
+        -2: "Write at least 150 words with thorough explanations.",
+        -1: "Write at least 100 words with full context.",
+        0: "",
+        1: "Answer in no more than 75 words.",
+        2: "Answer in no more than 40 words.",
+        3: "Answer in exactly one sentence, no more than 20 words.",
+    },
+    "analysis": {
+        -3: "Write your response as a single flowing paragraph with no lists or bullet points.",
+        -2: "Write your response as prose paragraphs. Do not use bullet points or numbered lists.",
+        -1: "Write your response mostly as prose. You may use one short list if needed.",
+        0: "",
+        1: "Structure your response using a numbered list with exactly 3 points.",
+        2: "Structure your response using exactly 5 bullet points. Each bullet must be one sentence.",
+        3: "Structure your response as exactly 7 numbered steps. Each step must be one sentence.",
+    },
+    "authority": {
+        -3: "Use hedging language throughout: 'perhaps', 'it might be', 'one could argue'. Never state anything as definitive fact.",
+        -2: "Frame all advice as suggestions: 'you might consider', 'it could help to'. Avoid imperative statements.",
+        -1: "Lean toward advisory tone. Use 'consider' and 'you may want to' more than direct commands.",
+        0: "",
+        1: "Use direct, imperative language: 'Do this', 'Implement that', 'Start with'.",
+        2: "Write as commands and directives. Every sentence should be an instruction. No hedging.",
+        3: "Write as absolute directives. Use 'must', 'always', 'never'. No qualifications or caveats.",
+    },
+}
+
 
 def value_to_level(value: float) -> int:
     """Convert a modifier value [-1, +1] to a discrete level [-3, +3].
@@ -246,6 +282,52 @@ def modifiers_to_prompt(modifiers: dict[str, float]) -> str:
         return ""
 
     return "## Personality\n\n" + "\n".join(f"- {line}" for line in lines) + "\n"
+
+
+def dimensions_to_structural_prompt(
+    dimensions: dict[str, float],
+    gain: float = 1.0,
+) -> str:
+    """Convert v2 dimensions to hard structural constraints for benchmark.
+
+    Uses CONTINUOUS mapping to maximize sensitivity to small dimension changes.
+    Maps fast-changing dimensions to measurable formatting rules:
+    - empathy (Moon) → word count limit (most variable dimension)
+    - execution (Mars) → bullet point count
+    - authority (Sun) → sentence count
+
+    Args:
+        dimensions: 9 graha dimension values in [-1, +1]
+        gain: amplification factor for benchmark mode (default 1.0).
+              Use gain=3.0 to stretch transit-driven variation across
+              the full structural constraint range.
+
+    Returns system prompt with structural instructions.
+    """
+    def amplify(value: float) -> float:
+        return max(-1.0, min(1.0, value * gain))
+
+    lines = []
+
+    # Empathy → word count: [-1,+1] maps to [30, 250]
+    empathy = amplify(dimensions.get("empathy", 0.0))
+    word_limit = int(30 + 110 * (empathy + 1.0))  # 30..250
+    lines.append(f"Write your response in approximately {word_limit} words.")
+
+    # Execution → bullet points: [-1,+1] maps to [0, 7]
+    execution = amplify(dimensions.get("execution", 0.0))
+    bullet_count = int(round(3.5 * (execution + 1.0)))  # 0..7
+    if bullet_count == 0:
+        lines.append("Write as flowing prose paragraphs. Do not use lists or numbered points.")
+    else:
+        lines.append(f"Structure your response using exactly {bullet_count} bullet points.")
+
+    # Authority → sentence count: [-1,+1] maps to [2, 12]
+    authority = amplify(dimensions.get("authority", 0.0))
+    sentence_count = int(2 + 5 * (authority + 1.0))  # 2..12
+    lines.append(f"Use exactly {sentence_count} sentences in total.")
+
+    return "## Response Format\n\n" + "\n".join(f"- {line}" for line in lines) + "\n"
 
 
 def dimensions_to_prompt(
