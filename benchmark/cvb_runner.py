@@ -16,13 +16,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
-import ollama
+from google import genai
+from google.genai import types
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -32,13 +34,17 @@ from benchmark.embed import score_batch
 
 PROMPTS_FILE = Path(__file__).parent / "prompts.json"
 RESULTS_DIR = Path(__file__).parent / "results"
+ENV_FILE = Path(__file__).parent.parent.parent / "Documents" / "Head-of-AI" / ".env"
 
-MODEL = "llama3.1:8b"
+MODEL = "gemini-2.0-flash"
 AGENT_ID = "benchmark-agent"
 STEP_HOURS = 12
 DEFAULT_DAYS = 90
-TEMPERATURE = 0.1
+TEMPERATURE = 0.4
 TRAIT = "agreeableness"
+
+# Rate limiting: Gemini Flash free tier = 15 RPM, paid = 2000 RPM
+RATE_LIMIT_DELAY = 0.5  # seconds between calls (safe for paid tier)
 
 # Transit-heavy weights for benchmark (maximizes day-to-day variance).
 BENCHMARK_WEIGHTS = (0.20, 0.25, 0.55)
@@ -58,22 +64,69 @@ RANDOM_PERSONALITIES = [
 ]
 
 
+def _load_env():
+    """Load GOOGLE_API_KEY from .env file."""
+    # Try multiple locations
+    for env_path in [
+        Path(__file__).parent.parent / ".env",
+        Path.home() / "Documents" / "Head-of-AI" / ".env",
+    ]:
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith("GOOGLE_API_KEY="):
+                    os.environ["GOOGLE_API_KEY"] = line.split("=", 1)[1].strip()
+                    return
+    if "GOOGLE_API_KEY" not in os.environ:
+        raise RuntimeError("GOOGLE_API_KEY not found. Set it in .env or environment.")
+
+
+_client: genai.Client | None = None
+
+
+def _get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        _load_env()
+        _client = genai.Client(
+            http_options=types.HttpOptions(timeout=30_000),
+        )
+    return _client
+
+
 def load_prompts() -> list[dict]:
     return json.loads(PROMPTS_FILE.read_text())
 
 
-def generate_one(prompt: str, system_prompt: str | None, temp: float, seed: int) -> str:
-    messages = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
-    messages.append({"role": "user", "content": prompt})
+def generate_one(prompt: str, system_prompt: str | None, temp: float, seed: int = 0) -> str:
+    """Generate a response using Gemini Flash.
 
-    response = ollama.chat(
-        model=MODEL,
-        messages=messages,
-        options={"temperature": temp, "seed": seed},
+    seed parameter kept for API compatibility but not used by Gemini.
+    """
+    client = _get_client()
+    config = types.GenerateContentConfig(
+        temperature=temp,
+        max_output_tokens=1024,
     )
-    return response["message"]["content"]
+    if system_prompt:
+        config.system_instruction = system_prompt
+
+    for attempt in range(3):
+        try:
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config=config,
+            )
+            time.sleep(RATE_LIMIT_DELAY)
+            return response.text or ""
+        except Exception as e:
+            if attempt < 2:
+                wait = (attempt + 1) * 5
+                print(f"  Gemini error: {e}, retrying in {wait}s...", flush=True)
+                time.sleep(wait)
+            else:
+                print(f"  Gemini failed after 3 attempts: {e}", flush=True)
+                return f"[ERROR: {e}]"
 
 
 # ──────────────────────────────────────────────

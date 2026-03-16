@@ -1,4 +1,4 @@
-"""Embedding-based trait scoring via nomic-embed-text (Ollama).
+"""Embedding-based trait scoring via Gemini Embedding API.
 
 Replaces rule-based trait proxies (brainstorm 002 decision).
 100% reproducible, no LLM judge, captures semantic meaning.
@@ -6,10 +6,13 @@ Replaces rule-based trait proxies (brainstorm 002 decision).
 
 from __future__ import annotations
 
-import numpy as np
-import ollama
+import os
+from pathlib import Path
 
-MODEL = "nomic-embed-text"
+import numpy as np
+from google import genai
+
+MODEL = "gemini-embedding-001"
 
 # Semantic anchors: define the extremes of each trait.
 # Score = cosine_sim(output, pos) - cosine_sim(output, neg)
@@ -31,18 +34,39 @@ ANCHORS = {
 
 # Cache for anchor embeddings (computed once)
 _anchor_cache: dict[str, dict[str, np.ndarray]] = {}
+_client: genai.Client | None = None
+
+
+def _get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        # Load API key if not in env
+        if "GOOGLE_API_KEY" not in os.environ:
+            for env_path in [
+                Path(__file__).parent.parent / ".env",
+                Path.home() / "Documents" / "Head-of-AI" / ".env",
+            ]:
+                if env_path.exists():
+                    for line in env_path.read_text().splitlines():
+                        if line.startswith("GOOGLE_API_KEY="):
+                            os.environ["GOOGLE_API_KEY"] = line.split("=", 1)[1].strip()
+                            break
+        _client = genai.Client()
+    return _client
 
 
 def _embed_text(text: str) -> np.ndarray:
-    """Embed a single text via Ollama nomic-embed-text."""
-    response = ollama.embed(model=MODEL, input=text)
-    return np.array(response["embeddings"][0], dtype=np.float64)
+    """Embed a single text via Gemini Embedding API."""
+    client = _get_client()
+    result = client.models.embed_content(model=MODEL, contents=text)
+    return np.array(result.embeddings[0].values, dtype=np.float64)
 
 
 def _embed_batch(texts: list[str]) -> list[np.ndarray]:
-    """Embed multiple texts in a single Ollama call."""
-    response = ollama.embed(model=MODEL, input=texts)
-    return [np.array(e, dtype=np.float64) for e in response["embeddings"]]
+    """Embed multiple texts in a single Gemini call."""
+    client = _get_client()
+    result = client.models.embed_content(model=MODEL, contents=texts)
+    return [np.array(e.values, dtype=np.float64) for e in result.embeddings]
 
 
 def cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
@@ -84,9 +108,15 @@ def score_batch(texts: list[str], trait: str = "agreeableness") -> list[float]:
     if not texts:
         return []
     anchors = get_anchor_embeddings(trait)
-    embeddings = _embed_batch(texts)
+    # Gemini batch limit ~100 texts, chunk if needed
+    BATCH_SIZE = 100
+    all_embeddings = []
+    for i in range(0, len(texts), BATCH_SIZE):
+        batch = texts[i : i + BATCH_SIZE]
+        all_embeddings.extend(_embed_batch(batch))
+
     scores = []
-    for emb in embeddings:
+    for emb in all_embeddings:
         s = cosine_sim(emb, anchors["pos"]) - cosine_sim(emb, anchors["neg"])
         scores.append(s)
     return scores

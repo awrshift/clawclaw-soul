@@ -6,28 +6,28 @@
 
 ## Next Session Prompt
 
-**Session 193 (2026-03-15):**
+**Session 195 (2026-03-16):**
 
-Phase 3.5 (Digital Soul) — core DONE:
-- `soul.py` написан и протестирован (96 тестов, все pass)
-- `engine.py` обновлён: `compute_modifiers_v2()` с 9 dimensions
-- `prompt.py` обновлён: `dimensions_to_prompt()` + yoga overrides
+Phase 3.5 (Digital Soul) DONE. Phase 3 (Benchmark) pivoting per Brainstorm 004.
 
-CVB v2 smoke test (10 days) бежит фоном. Когда завершится:
-1. Проверить `benchmark/results/cvb_v2_verdict.json`
-2. Если GO → запустить full run: `python3 benchmark/cvb_runner.py` (90 дней)
-3. Если NO-GO → дебажить
+**CVB v2 — 90-day full run completed, NO-GO:**
+- Embedding scoring (both Ollama nomic + Gemini embedding-001) too flat — score range 0.09
+- Root cause: embeddings measure TOPIC not TONE. RLHF flattens personality nudges
+- 540 Gemini Flash responses cached in `benchmark/results/cvb_v2_results.json` (reusable)
 
-**Следующие задачи:**
-1. Интегрировать soul.py в OpenClaw skill (refresh.py, __main__.py)
-2. Обновить temporal_md.py для 9 dimensions
-3. Phase 4: README + GitHub launch
+**Brainstorm 004 decision: structural constraints + multi-proxy scoring**
+Transcripts: `docs/experiments/004-scoring-brainstorm-r{1,2,3}.md`
 
-**Файлы Phase 3.5:**
-- `agent_soul/soul.py` — Digital Soul (natal chart, 9 dimensions, yogas, aspects)
-- `agent_soul/engine.py` — v1 (5 modifiers) + v2 (9 dimensions)
-- `agent_soul/prompt.py` — v1 (LEVEL_MAP) + v2 (DIMENSION_LEVEL_MAP + YOGA_PROMPTS)
-- `tests/test_soul.py` — 29 tests
+**Next steps (implement Brainstorm 004):**
+1. Update `prompt.py` — structural constraints instead of personality nudges
+   - compression → sentence/word limits ("Answer in exactly 2 sentences")
+   - analysis → detail level ("Use exactly 3 bullet points" vs "Write one paragraph")
+   - authority → directive vs advisory format
+2. Re-generate 540 responses with structural prompt variants
+3. Compute multi-proxy metrics (zero cost): word_count, hedge_density, pronoun_ratio, distinct-2
+4. FFT on proxy time series → check peak alignment at 9-day period
+5. Go/No-Go: FFT peak ≥ 3σ above noise floor
+6. Fallback: structured JSON extraction via Gemini Flash ($0.50)
 - `tests/test_engine_v2.py` — 15 tests
 
 **Dependencies:** `skyfield`, `pyswisseph`, `ollama`, `numpy`, `matplotlib`, `scipy`. Models: `llama3.1:8b`, `nomic-embed-text`.
