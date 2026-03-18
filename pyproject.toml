@@ -24,6 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "pyswisseph>=2.10",
+    "skyfield>=1.45",
     "pydantic>=2.7",
     "python-dotenv>=1.0",
 ]
