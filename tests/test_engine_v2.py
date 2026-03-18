@@ -87,7 +87,9 @@ class TestDimensionsToPrompt:
     def test_yoga_included(self):
         dims = {d: 0.0 for d in DIMENSION_NAMES}
         dims["empathy"] = 0.5
-        yogas = [{"name": "Gaja Kesari", "effect": "empathetic_sage", "planets": ["Moon", "Jupiter"], "description": ""}]
+        yogas = [
+            {"name": "Gaja Kesari", "effect": "empathetic_sage", "planets": ["Moon", "Jupiter"], "description": ""},
+        ]
         prompt = dimensions_to_prompt(dims, yogas)
         assert "Behavioral Patterns" in prompt
         assert "empathy" in prompt.lower() or "wisdom" in prompt.lower()
@@ -97,7 +99,7 @@ class TestDimensionsToPrompt:
         dims = {d: 0.9 for d in DIMENSION_NAMES}
         prompt = dimensions_to_prompt(dims)
         # Should have at most MAX_ACTIVE_DIMENSIONS bullet points in Personality
-        personality_lines = [l for l in prompt.split("\n") if l.startswith("- ")]
+        personality_lines = [line for line in prompt.split("\n") if line.startswith("- ")]
         assert len(personality_lines) <= 5  # 4 dims + possible yoga
 
     def test_unknown_yoga_effect_ignored(self):

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 from clawclaw_soul.dasha import compute_dasha_timeline, find_active_period
 from clawclaw_soul.ephemeris import get_planet_positions
-from clawclaw_soul.tables import DIGNITY_SCORES, get_dignity, get_sign, get_sign_degree
+from clawclaw_soul.tables import DIGNITY_SCORES, get_dignity
 from clawclaw_soul.transit import compute_transit_scores
 
 MODIFIER_NAMES = ["verbosity", "agreeableness", "creativity", "risk_tolerance", "proactivity"]
@@ -108,7 +108,9 @@ DASHA_OVERLAY: dict[str, dict[str, float]] = {
     "Mercury": {"verbosity": 0.4, "agreeableness": 0.0, "creativity": 0.1, "risk_tolerance": 0.0, "proactivity": 0.3},
     "Jupiter": {"verbosity": 0.3, "agreeableness": 0.3, "creativity": 0.1, "risk_tolerance": 0.1, "proactivity": 0.1},
     "Venus": {"verbosity": 0.1, "agreeableness": 0.2, "creativity": 0.4, "risk_tolerance": 0.0, "proactivity": 0.2},
-    "Saturn": {"verbosity": -0.3, "agreeableness": -0.1, "creativity": -0.2, "risk_tolerance": -0.3, "proactivity": -0.1},
+    "Saturn": {
+        "verbosity": -0.3, "agreeableness": -0.1, "creativity": -0.2, "risk_tolerance": -0.3, "proactivity": -0.1,
+    },
     "Rahu": {"verbosity": 0.0, "agreeableness": -0.2, "creativity": 0.4, "risk_tolerance": 0.3, "proactivity": 0.1},
     "Ketu": {"verbosity": -0.2, "agreeableness": 0.0, "creativity": 0.1, "risk_tolerance": -0.1, "proactivity": -0.3},
 }
@@ -302,7 +304,7 @@ def compute_transit_dimensions(
 
 
 def compute_modifiers_v2(
-    soul: "AgentSoul",
+    soul: "AgentSoul",  # noqa: F821
     timestamp: datetime | None = None,
     weights: tuple[float, float, float] = (0.60, 0.25, 0.15),
 ) -> dict:
@@ -319,7 +321,6 @@ def compute_modifiers_v2(
     Returns:
         Dict with dimensions (9), yogas, phase info, volatility, metadata
     """
-    from clawclaw_soul.soul import AgentSoul
 
     if timestamp is None:
         timestamp = datetime.now(timezone.utc)

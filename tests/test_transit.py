@@ -1,6 +1,5 @@
 """Tests for Gochar (transit) scoring."""
 
-import pytest
 
 from clawclaw_soul.transit import check_vedha, compute_transit_scores, score_transit
 

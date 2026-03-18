@@ -9,8 +9,6 @@ astrological data into actionable agent configuration.
 
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 

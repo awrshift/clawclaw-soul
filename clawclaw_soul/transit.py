@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from clawclaw_soul.tables import (
     GOCHAR_FAVORABLE,
-    SIGN_INDEX,
     VEDHA_PAIRS,
     get_house_from_moon,
 )

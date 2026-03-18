@@ -2,21 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 from clawclaw_soul.soul import (
-    AgentSoul,
-    DIMENSION_NAMES,
     GRAHA_TO_DIMENSION,
     HOUSE_DOMAINS,
-    check_combustion,
-    compute_all_dimensions,
-    compute_aspects,
-    compute_houses,
     compute_lagna,
     compute_planet_positions,
     create_soul,
-    detect_yogas,
     generate_birth_data,
 )
 
@@ -124,7 +115,7 @@ class TestComputeHouses:
 
     def test_consecutive_signs(self):
         """Houses should have consecutive zodiac signs (Whole Sign)."""
-        from clawclaw_soul.tables import SIGNS, SIGN_INDEX
+        from clawclaw_soul.tables import SIGN_INDEX
         soul = create_soul(seed=0)
         first_sign_idx = SIGN_INDEX[soul.houses[0]["sign"]]
         for i, h in enumerate(soul.houses):

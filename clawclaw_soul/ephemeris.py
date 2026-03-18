@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from skyfield.api import Loader, load as sf_load
+from skyfield.api import Loader
 from skyfield.timelib import Time
 
 from clawclaw_soul.tables import get_nakshatra, get_sign, get_sign_degree
@@ -53,7 +53,7 @@ def get_ayanamsha(jd: float) -> float:
 
     Uses the standard Lahiri polynomial approximation.
     """
-    t_centuries = (jd - 2451545.0) / 36525.0
+    _t_centuries = (jd - 2451545.0) / 36525.0  # noqa: F841
     # Lahiri ayanamsha: precession-based formula
     ayanamsha = 23.85 + 0.01396 * (jd - 2451545.0) / 365.25
     return ayanamsha
@@ -94,7 +94,6 @@ def is_retrograde(planet: str, dt: datetime) -> bool:
     astrometric = earth.at(t).observe(target)
     lat, lon, _ = astrometric.apparent().ecliptic_latlon()
 
-    from skyfield.api import load as sf_load2
     delta_days = 0.1  # ~2.4 hours
     t2 = _ts.tt_jd(t.tt + delta_days)
     astrometric2 = earth.at(t2).observe(target)

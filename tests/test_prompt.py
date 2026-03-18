@@ -1,6 +1,5 @@
 """Tests for prompt translation — levels, dead zone, clamping."""
 
-import pytest
 
 from clawclaw_soul.prompt import (
     CLAMP_THRESHOLD,

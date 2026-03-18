@@ -1,19 +1,17 @@
 """Tests for Master Agent script."""
 
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from app.master import (
-    call_api,
+    CHILD_AGENTS,
+    DEFAULT_API_URL,
     generate_soul,
     print_comparison_table,
     print_soul_summary,
-    CHILD_AGENTS,
-    DEFAULT_API_URL,
 )
-
 
 # Sample API response for mocking
 SAMPLE_SOUL = {

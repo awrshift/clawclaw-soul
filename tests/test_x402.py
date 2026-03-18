@@ -8,13 +8,12 @@ x402 returns payment info in base64-encoded `payment-required` header.
 """
 
 import base64
+import importlib
 import json
 import os
-import importlib
 
 import pytest
 from fastapi.testclient import TestClient
-
 
 WALLET = "0x2E37839a9c3d3082FBf02d0b9D1AF0AEDa7e9C34"
 NETWORK = "eip155:84532"

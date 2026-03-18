@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
-
+from benchmark.proxy_metrics import compute_batch, compute_proxies
 from clawclaw_soul.prompt import (
-    dimensions_to_structural_prompt,
     STRUCTURAL_CONSTRAINTS,
+    dimensions_to_structural_prompt,
 )
-from benchmark.proxy_metrics import compute_proxies, compute_batch
-
 
 # ──────────────────────────────────────────────
 # Structural Prompt Tests

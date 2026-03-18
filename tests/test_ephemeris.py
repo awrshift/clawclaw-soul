@@ -2,8 +2,6 @@
 
 from datetime import datetime, timezone
 
-import pytest
-
 from clawclaw_soul.ephemeris import get_ayanamsha, get_planet_positions, is_retrograde
 
 

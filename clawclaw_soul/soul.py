@@ -11,30 +11,18 @@ Design: brainstorms 003-004
 
 from __future__ import annotations
 
-import json
 import math
 import random
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
+from datetime import datetime, timezone
 
 import swisseph as swe
 
 from clawclaw_soul.tables import (
-    DASHA_SEQUENCE,
     DIGNITY_SCORES,
     EXALTATION,
-    DEBILITATION,
-    MAHADASHA_YEARS,
-    MOOLATRIKONA,
-    NATURAL_FRIENDSHIPS,
-    NAKSHATRAS,
-    NAKSHATRA_RULERS,
-    OWNERSHIP,
     SIGNS,
-    SIGN_INDEX,
     get_dignity,
-    get_house_from_moon,
     get_nakshatra,
     get_sign,
     get_sign_degree,
@@ -386,7 +374,7 @@ def score_graha_dimension(
 
     # 5. Retrograde: internalization (not simply negative)
     # Retrograde shifts the dimension inward (self-directed)
-    retro_flag = pos.get("retrograde", False) and planet not in ("Rahu", "Ketu")
+    _retro_flag = pos.get("retrograde", False) and planet not in ("Rahu", "Ketu")  # noqa: F841
 
     # Combine
     raw = base_score + house_mod + aspect_mod
@@ -653,24 +641,24 @@ class AgentSoul:
     def summary(self) -> str:
         """Human-readable summary of this soul."""
         lines = [
-            f"=== Agent Soul ===",
+            "=== Agent Soul ===",
             f"Born: {self.birth_dt.strftime('%Y-%m-%d %H:%M UTC')}",
             f"Location: {self.latitude:.2f}, {self.longitude:.2f}",
             f"Lagna: {self.lagna_sign} ({self.lagna_lon:.1f}°)",
             f"Moon: {self.positions['Moon']['sign']} in {self.moon_nakshatra}",
-            f"",
-            f"--- Dimensions (9 Grahas) ---",
+            "",
+            "--- Dimensions (9 Grahas) ---",
         ]
         for dim, val in self.dimensions.items():
             bar = "+" * max(0, int(val * 10)) + "-" * max(0, int(-val * 10))
             lines.append(f"  {dim:15s} {val:+.3f} {bar}")
 
-        lines.append(f"\n--- Capabilities (12 Houses) ---")
+        lines.append("\n--- Capabilities (12 Houses) ---")
         for cap, val in self.capabilities.items():
             lines.append(f"  {cap:17s} {val:+.3f}")
 
         if self.yogas:
-            lines.append(f"\n--- Yogas ---")
+            lines.append("\n--- Yogas ---")
             for y in self.yogas:
                 lines.append(f"  {y['name']:20s} → {y['description']}")
 

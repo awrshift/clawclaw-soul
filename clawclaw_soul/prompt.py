@@ -212,7 +212,7 @@ STRUCTURAL_CONSTRAINTS: dict[str, dict[int, str]] = {
         3: "Structure your response as exactly 7 numbered steps. Each step must be one sentence.",
     },
     "authority": {
-        -3: "Use hedging language throughout: 'perhaps', 'it might be', 'one could argue'. Never state anything as definitive fact.",
+        -3: "Use hedging language: 'perhaps', 'it might be', 'one could argue'. Never state as definitive fact.",
         -2: "Frame all advice as suggestions: 'you might consider', 'it could help to'. Avoid imperative statements.",
         -1: "Lean toward advisory tone. Use 'consider' and 'you may want to' more than direct commands.",
         0: "",
