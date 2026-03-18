@@ -1,10 +1,12 @@
 <div align="center">
 
-# ClawClaw Soul
+<img src="banner.png" alt="ClawClaw Soul — Open-source identity engine for AI agents" width="100%">
 
-**Open-source identity engine for AI agents.**
+**Celestial mechanics for synthetic souls.**
 
-[Quickstart](#quickstart) · [Docs](https://clawclawsoul.dev) · [GitHub Action](#github-action) · [Benchmark](#benchmark)
+Open-source identity engine for AI agents. Deterministic personality from ephemeris data.
+
+[Quickstart](#quickstart) · [Docs](https://clawclawsoul.com) · [GitHub Action](#github-action) · [Benchmark](#benchmark)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-175%20passed-brightgreen.svg)]()
