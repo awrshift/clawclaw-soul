@@ -15,6 +15,9 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
+x402 = pytest.importorskip("x402", reason="x402 not installed")
+
+
 WALLET = "0x2E37839a9c3d3082FBf02d0b9D1AF0AEDa7e9C34"
 NETWORK = "eip155:84532"
 
