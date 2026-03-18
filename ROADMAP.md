@@ -12,17 +12,18 @@ ClawClaw Soul is under active development. Here's what's coming.
 - [x] Landing page + custom domain (clawclawsoul.com)
 - [x] Design system (102 tokens, Astrolabe palette)
 - [x] Public API: `generate()` + `.card` property
+- [x] SOUL.md standard + CLI (`clawclaw-soul init` / `verify`)
+- [x] MCP Server (4 tools for Claude Desktop / Cursor)
+- [x] PyPI: `pip install clawclaw-soul`
+- [x] VPS deployment (Docker, hardened)
 
 ## Now
 
-- [ ] **SOUL.md standard** — persistent identity file for any AI agent (like AGENTS.md for identity)
-- [ ] **pip package** — `pip install clawclaw-soul`
-- [ ] **CLI** — `clawclaw-soul init` / `clawclaw-soul verify`
-- [ ] **MCP Server** — local runtime that reads SOUL.md and injects persona into Claude Desktop / Cursor
+- [ ] **Launch** — Hacker News, r/LocalLLaMA, X
+- [ ] **GitHub Action** `clawclaw-soul/animate` — auto-update SOUL.md daily via transits
 
 ## Next
 
-- [ ] **GitHub Action** `clawclaw-soul/animate` — auto-update SOUL.md daily via transits
 - [ ] `/swarm/seed` — batch-generate N diverse agent identities
 - [ ] **150 yoga integration** — 25x increase in behavioral diversity
 - [ ] **Ashtakavarga** — precision transit scoring
