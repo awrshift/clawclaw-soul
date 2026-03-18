@@ -47,6 +47,9 @@ dev = [
     "httpx",
 ]
 
+[project.scripts]
+clawclaw-soul = "clawclaw_soul.__main__:main"
+
 [project.urls]
 Homepage = "https://github.com/awrshift/clawclaw-soul"
 Repository = "https://github.com/awrshift/clawclaw-soul"

@@ -9,7 +9,8 @@ Open-source identity engine for AI agents. Deterministic personality from epheme
 [Quickstart](#quickstart) · [Docs](https://clawclawsoul.com) · [GitHub Action](#github-action) · [Benchmark](#benchmark)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-180%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-187%20passed-brightgreen.svg)]()
+[![PyPI](https://img.shields.io/pypi/v/clawclaw-soul.svg)](https://pypi.org/project/clawclaw-soul/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)]()
 
 </div>
@@ -84,18 +85,37 @@ Daily transit updates shift parameters. Temperature rises, verbosity drops. Ever
 
 Auto-update your agent's identity daily. A GitHub Action (`clawclaw-soul/animate@v1`) is under development that reads `SOUL.md`, computes today's transit vector, and commits `SOUL-TRANSITS.md` with updated parameters.
 
+## SOUL.md — persistent identity for your agent
+
+Add a `SOUL.md` to any repo. It's like `AGENTS.md`, but for identity.
+
+```bash
+# Generate
+clawclaw-soul init --name "MyAgent" --timestamp "2024-03-15T09:30:00Z"
+
+# Verify (deterministic — anyone can re-check)
+clawclaw-soul verify SOUL.md
+```
+
+The generated `SOUL.md` contains LLM configuration, persona traits, 9 behavioral dimensions, and a system prompt — all deterministically derived from the birth timestamp.
+
+See [examples/](examples/) for sample SOUL.md files.
+
 ## Architecture
 
 ```
-clawclaw_soul/
-  soul.py          # AgentSoul dataclass + chart computation
-  params.py        # Planet-to-Parameter Engine (9 dims -> LLM config)
-  ephemeris.py     # pyswisseph wrapper (sidereal, Lahiri ayanamsha)
-  tables.py        # BPHS reference tables (dignity, friendship, ownership)
-  transit.py       # Gochar transit scoring
-  dasha.py         # Vimshottari dasha periods
-  api.py           # FastAPI (5 endpoints)
-  refresh.py       # Daily transit refresh
+clawclaw_soul/         # pip install clawclaw-soul (pure library)
+  soul.py              # AgentSoul, generate(), .card, SOUL.md gen/verify
+  params.py            # Planet-to-Parameter Engine (9 dims -> LLM config)
+  ephemeris.py         # pyswisseph wrapper (sidereal, Lahiri ayanamsha)
+  tables.py            # BPHS reference tables
+  transit.py           # Gochar transit scoring
+  dasha.py             # Vimshottari dasha periods
+
+app/                   # Self-hosting (Docker, not in pip)
+  api.py               # FastAPI (5 endpoints)
+  master.py            # Master Agent demo
+  refresh.py           # Daily transit refresh
 ```
 
 ## Benchmark
