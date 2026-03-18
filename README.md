@@ -118,6 +118,29 @@ app/                   # Self-hosting (Docker, not in pip)
   refresh.py           # Daily transit refresh
 ```
 
+## MCP Server
+
+Use ClawClaw Soul as an MCP tool in Claude Desktop, Cursor, or any MCP client:
+
+```bash
+pip install clawclaw-soul[mcp]
+```
+
+Add to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "clawclaw-soul": {
+      "command": "python",
+      "args": ["-m", "clawclaw_soul.mcp_server"]
+    }
+  }
+}
+```
+
+Available tools: `generate_soul`, `init_soul_md`, `verify_identity`, `get_daily_drift`.
+
 ## Benchmark
 
 The Celestial Variance Benchmark (CVB) proves that planetary-seeded prompts produce statistically different LLM outputs:
