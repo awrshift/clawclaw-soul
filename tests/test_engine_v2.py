@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from agent_soul.engine import DIMENSION_NAMES, compute_modifiers_v2
-from agent_soul.prompt import dimensions_to_prompt
-from agent_soul.soul import create_soul
+from clawclaw_soul.engine import DIMENSION_NAMES, compute_modifiers_v2
+from clawclaw_soul.prompt import dimensions_to_prompt
+from clawclaw_soul.soul import create_soul
 
 
 class TestComputeModifiersV2:

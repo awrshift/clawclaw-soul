@@ -3,19 +3,37 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-soul"
+name = "clawclaw-soul"
 version = "0.1.0"
-description = "Deterministic personality modifiers for AI agents via celestial mechanics"
+description = "Open-source identity engine for AI agents. Deterministic personality from celestial mechanics."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
+authors = [
+    { name = "Serhii Kravchenko" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
-    "skyfield>=1.45",
+    "pyswisseph>=2.10",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
+x402 = ["x402[fastapi,evm]>=2.4"]
 benchmark = [
-    "ollama",
     "numpy",
     "matplotlib",
     "nltk",
@@ -26,8 +44,12 @@ dev = [
     "ruff",
 ]
 
+[project.urls]
+Homepage = "https://github.com/pmserhii/clawclaw-soul"
+Repository = "https://github.com/pmserhii/clawclaw-soul"
+
 [tool.setuptools.packages.find]
-include = ["agent_soul*"]
+include = ["clawclaw_soul*"]
 
 [tool.ruff]
 line-length = 100

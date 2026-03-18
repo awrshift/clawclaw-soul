@@ -2,7 +2,7 @@
 
 import pytest
 
-from agent_soul.transit import check_vedha, compute_transit_scores, score_transit
+from clawclaw_soul.transit import check_vedha, compute_transit_scores, score_transit
 
 
 class TestScoreTransit:

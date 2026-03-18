@@ -5,3 +5,10 @@ dist/
 build/
 .pytest_cache/
 *.bsp
+.env
+
+# Internal docs (not for public repo)
+_internal/
+
+# Generated files
+design-tokens.css

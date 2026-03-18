@@ -1,0 +1,31 @@
+{
+  "_comment": "DRAFT — verify against actual OpenClaw config format before deployment",
+  "_experiment": "011-prompt-injection-defense",
+  "tools": {
+    "exec": {
+      "security": "allowlist",
+      "allowlist": ["python3", "node"]
+    },
+    "deny": ["curl", "wget", "nc", "netcat", "bash", "sh", "zsh", "cat", "less", "head", "tail", "find", "locate", "env", "printenv", "set"]
+  },
+  "agents": {
+    "defaults": {
+      "heartbeat": {
+        "every": "0m"
+      },
+      "dmPolicy": "allowlist",
+      "dmAllowlist": []
+    }
+  },
+  "session": {
+    "reset": {
+      "mode": "idle",
+      "idleMinutes": 30
+    },
+    "maxTurns": 20,
+    "maxTokens": 50000
+  },
+  "compaction": {
+    "mode": "safeguard"
+  }
+}

@@ -24,7 +24,7 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Lint
-        run: ruff check agent_soul/ tests/
+        run: ruff check clawclaw_soul/ tests/
 
       - name: Test
         run: pytest tests/ -v

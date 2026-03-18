@@ -4,12 +4,12 @@ from datetime import datetime, timezone
 
 import pytest
 
-from agent_soul.dasha import (
+from clawclaw_soul.dasha import (
     _balance_of_dasha,
     compute_dasha_timeline,
     find_active_period,
 )
-from agent_soul.tables import DASHA_SEQUENCE, MAHADASHA_YEARS, NAKSHATRA_RULERS
+from clawclaw_soul.tables import DASHA_SEQUENCE, MAHADASHA_YEARS, NAKSHATRA_RULERS
 
 
 class TestBalanceOfDasha:

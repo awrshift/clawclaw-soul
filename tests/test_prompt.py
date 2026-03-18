@@ -2,7 +2,7 @@
 
 import pytest
 
-from agent_soul.prompt import (
+from clawclaw_soul.prompt import (
     CLAMP_THRESHOLD,
     DEAD_ZONE,
     MAX_ACTIVE_MODIFIERS,

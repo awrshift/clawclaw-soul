@@ -1,0 +1,82 @@
+[
+  {
+    "id": "p01",
+    "prompt": "Explain how a hash table works."
+  },
+  {
+    "id": "p02",
+    "prompt": "What are the pros and cons of remote work?"
+  },
+  {
+    "id": "p03",
+    "prompt": "Describe a good strategy for learning a new programming language."
+  },
+  {
+    "id": "p04",
+    "prompt": "How should a small team prioritize features for a new product?"
+  },
+  {
+    "id": "p05",
+    "prompt": "What makes a good code review?"
+  },
+  {
+    "id": "p06",
+    "prompt": "Explain the concept of technical debt."
+  },
+  {
+    "id": "p07",
+    "prompt": "How do you decide when to refactor code versus rewrite it?"
+  },
+  {
+    "id": "p08",
+    "prompt": "What are the key principles of good API design?"
+  },
+  {
+    "id": "p09",
+    "prompt": "Describe how you would debug a slow database query."
+  },
+  {
+    "id": "p10",
+    "prompt": "What factors should you consider when choosing a tech stack?"
+  },
+  {
+    "id": "p11",
+    "prompt": "How do you handle disagreements in a team about architecture decisions?"
+  },
+  {
+    "id": "p12",
+    "prompt": "What is the best way to onboard a new developer to a project?"
+  },
+  {
+    "id": "p13",
+    "prompt": "Explain the trade-offs between consistency and availability in distributed systems."
+  },
+  {
+    "id": "p14",
+    "prompt": "How should error handling be designed in a backend service?"
+  },
+  {
+    "id": "p15",
+    "prompt": "What makes documentation effective?"
+  },
+  {
+    "id": "p16",
+    "prompt": "Describe a systematic approach to estimating project timelines."
+  },
+  {
+    "id": "p17",
+    "prompt": "How do you evaluate whether to build or buy a software component?"
+  },
+  {
+    "id": "p18",
+    "prompt": "What are the most important metrics for a SaaS product?"
+  },
+  {
+    "id": "p19",
+    "prompt": "How should a team handle production incidents?"
+  },
+  {
+    "id": "p20",
+    "prompt": "What principles guide good data modeling?"
+  }
+]

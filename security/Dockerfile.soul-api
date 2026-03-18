@@ -1,0 +1,55 @@
+# Soul Oracle — soul-api Dockerfile
+# Multi-stage build: compile pyswisseph in builder, copy wheels to slim runtime
+# Security: non-root user, no __pycache__, unbuffered logging
+
+# === Builder Stage ===
+FROM python:3.13-slim AS builder
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy dependency spec and source
+COPY pyproject.toml ./
+COPY agent_soul/ ./agent_soul/
+
+# Build only pyswisseph wheel (needs C compiler)
+RUN pip wheel --no-cache-dir --wheel-dir /wheels pyswisseph
+
+# === Runtime Stage ===
+FROM python:3.13-slim
+
+# Security: no bytecode, unbuffered output, no root
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Create non-root user
+RUN useradd --system --uid 1001 --create-home appuser
+
+WORKDIR /app
+
+# Install pyswisseph from pre-built wheel (needs C ext), rest from PyPI
+COPY --from=builder /wheels /wheels
+COPY pyproject.toml ./
+COPY agent_soul/ ./agent_soul/
+RUN pip install --no-cache-dir --find-links=/wheels . && \
+    rm -rf /wheels
+
+# Re-copy application code with correct ownership
+COPY --chown=appuser:appuser agent_soul/ ./agent_soul/
+
+# Create data directory owned by appuser
+RUN mkdir -p /app/data && chown appuser:appuser /app/data
+
+# Switch to non-root
+USER appuser
+
+EXPOSE 8432
+
+# Health check (wget because curl may not be in slim)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8432/health')" || exit 1
+
+CMD ["python", "-m", "uvicorn", "agent_soul.api:app", "--host", "0.0.0.0", "--port", "8432", "--log-level", "info"]

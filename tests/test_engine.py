@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from agent_soul.engine import (
+from clawclaw_soul.engine import (
     MODIFIER_NAMES,
     agent_id_to_birth,
     compute_modifiers,

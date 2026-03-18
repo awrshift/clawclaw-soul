@@ -1,4 +1,7 @@
 {
-  "every": "240m",
-  "run": "uv run --with agent-soul python -m agent_soul.refresh"
+  "name": "soul-oracle",
+  "version": "0.2.0",
+  "description": "Deterministic agent identity via planetary mathematics",
+  "api_url": "http://185.177.116.94:8432",
+  "install": "python3 openclaw/install.py"
 }

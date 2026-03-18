@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from agent_soul.ephemeris import get_ayanamsha, get_planet_positions, is_retrograde
+from clawclaw_soul.ephemeris import get_ayanamsha, get_planet_positions, is_retrograde
 
 
 class TestGetPlanetPositions:

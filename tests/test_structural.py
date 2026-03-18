@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from agent_soul.prompt import (
+from clawclaw_soul.prompt import (
     dimensions_to_structural_prompt,
     STRUCTURAL_CONSTRAINTS,
 )

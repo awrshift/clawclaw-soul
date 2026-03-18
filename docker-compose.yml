@@ -1,0 +1,31 @@
+# Soul Oracle API — MVP deployment
+# Hardened: read-only FS, cap_drop ALL, non-root, resource limits
+# Full hardened version (with squid proxy): security/docker-compose.hardened.yml
+
+services:
+  soul-api:
+    build:
+      context: .
+      dockerfile: security/Dockerfile.soul-api
+    image: soul-oracle/soul-api:latest
+    container_name: soul-api
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
+        reservations:
+          memory: 256M
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64m
+    env_file:
+      - .env
+    ports:
+      - "8432:8432"
+    restart: unless-stopped
+    user: "1001:1001"
