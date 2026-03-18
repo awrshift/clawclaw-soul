@@ -23,9 +23,9 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agent_soul.engine import compute_modifiers_v2
-from agent_soul.prompt import dimensions_to_trojan_prompt
-from agent_soul.soul import create_soul
+from clawclaw_soul.engine import compute_modifiers_v2
+from clawclaw_soul.prompt import dimensions_to_trojan_prompt
+from clawclaw_soul.soul import create_soul
 from benchmark.trojan_metrics import compute_trojan_metrics
 
 RESULTS_DIR = Path(__file__).parent / "results"

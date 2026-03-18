@@ -32,7 +32,7 @@ def paid_client():
     os.environ["SOUL_PAY_TO_ADDRESS"] = WALLET
     os.environ["SOUL_NETWORK"] = NETWORK
 
-    import clawclaw_soul.api as api_module
+    import app.api as api_module
 
     importlib.reload(api_module)
     client = TestClient(api_module.app, raise_server_exceptions=False)

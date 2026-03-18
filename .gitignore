@@ -7,8 +7,22 @@ build/
 *.bsp
 .env
 
-# Internal docs (not for public repo)
-_internal/
+# Project intelligence (local only, not for public repo)
+.claude/
+context/
+CLAUDE.md
 
-# Generated files
-design-tokens.css
+# R&D experiments (internal)
+experiments/
+
+# Design system (internal)
+design/
+
+# Heavy data (benchmark results, visualizations)
+data/
+
+# MCP config (local only)
+.mcp.json
+
+# Banner source (large file, already committed once)
+# banner.png is tracked — don't re-add if regenerated

@@ -17,11 +17,11 @@ from pathlib import Path
 import numpy as np
 import ollama
 
-# Add parent dir so we can import agent_soul
+# Add parent dir so we can import clawclaw_soul
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agent_soul.engine import compute_modifiers
-from agent_soul.prompt import modifiers_to_prompt
+from clawclaw_soul.engine import compute_modifiers
+from clawclaw_soul.prompt import modifiers_to_prompt
 
 PROMPTS_FILE = Path(__file__).parent / "prompts.json"
 RESULTS_DIR = Path(__file__).parent / "results"

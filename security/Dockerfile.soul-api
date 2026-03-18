@@ -13,7 +13,7 @@ WORKDIR /build
 
 # Copy dependency spec and source
 COPY pyproject.toml ./
-COPY agent_soul/ ./agent_soul/
+COPY clawclaw_soul/ ./clawclaw_soul/
 
 # Build only pyswisseph wheel (needs C compiler)
 RUN pip wheel --no-cache-dir --wheel-dir /wheels pyswisseph
@@ -30,15 +30,18 @@ RUN useradd --system --uid 1001 --create-home appuser
 
 WORKDIR /app
 
-# Install pyswisseph from pre-built wheel (needs C ext), rest from PyPI
+# Install library with server extras + pyswisseph from pre-built wheel
 COPY --from=builder /wheels /wheels
 COPY pyproject.toml ./
-COPY agent_soul/ ./agent_soul/
-RUN pip install --no-cache-dir --find-links=/wheels . && \
+COPY clawclaw_soul/ ./clawclaw_soul/
+RUN pip install --no-cache-dir --find-links=/wheels ".[server]" && \
     rm -rf /wheels
 
-# Re-copy application code with correct ownership
-COPY --chown=appuser:appuser agent_soul/ ./agent_soul/
+# Copy server application code
+COPY --chown=appuser:appuser app/ ./app/
+
+# Re-copy library with correct ownership
+COPY --chown=appuser:appuser clawclaw_soul/ ./clawclaw_soul/
 
 # Create data directory owned by appuser
 RUN mkdir -p /app/data && chown appuser:appuser /app/data
@@ -52,4 +55,4 @@ EXPOSE 8432
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8432/health')" || exit 1
 
-CMD ["python", "-m", "uvicorn", "agent_soul.api:app", "--host", "0.0.0.0", "--port", "8432", "--log-level", "info"]
+CMD ["python", "-m", "uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8432", "--log-level", "info"]

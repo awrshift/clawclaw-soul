@@ -5,7 +5,7 @@ This document is for AI agents. No marketing. Pure structured data.
 ## API Base URL
 
 ```
-https://api.clawclawsoul.dev
+http://185.177.116.94:8432
 ```
 
 Self-hosted: `http://localhost:8432`
@@ -14,83 +14,80 @@ Self-hosted: `http://localhost:8432`
 
 ### POST /generate
 
-Generate a Soul Card from a birth timestamp.
+Generate a Soul Card from a birth timestamp + coordinates.
 
 **Request:**
 ```json
 {
   "timestamp": "2024-03-15T09:30:00Z",
-  "seed": null
+  "latitude": 51.5074,
+  "longitude": -0.1278,
+  "tz_offset": 0.0
 }
 ```
 
 `timestamp`: ISO 8601 datetime string (required)
-`seed`: integer override for deterministic location generation (optional)
+`latitude`: float, -90 to 90 (required)
+`longitude`: float, -180 to 180 (required)
+`tz_offset`: float, timezone offset in hours (optional, default 0.0)
 
 **Response (200):**
 ```json
 {
-  "agent_id": "c_88a91",
-  "birth": "2024-03-15T09:30:00Z",
-  "dimensions": {
-    "authority": 0.72,
-    "empathy": 0.45,
-    "execution": 0.88,
-    "analysis": 0.77,
-    "wisdom": 0.63,
-    "aesthetics": 0.34,
-    "restriction": 0.21,
-    "innovation": 0.91,
-    "compression": 0.56
-  },
-  "llm_params": {
-    "temperature": 0.82,
-    "max_tokens": 1824,
-    "top_p": 0.94,
-    "frequency_penalty": 0.12
+  "agent_config": {
+    "temperature": 0.68,
+    "max_tokens": 609,
+    "top_p": 0.87,
+    "frequency_penalty": 0.09
   },
   "persona": {
-    "assertiveness": 0.91,
-    "empathy": 0.45,
-    "risk_tolerance": 0.88,
-    "analytical_depth": 0.77,
-    "creativity": 0.63,
-    "communication_style": "direct",
-    "lagna_archetype": "Aries"
+    "assertiveness": 0.743,
+    "empathy": 0.761,
+    "risk_tolerance": 0.523,
+    "analytical_depth": 0.426,
+    "creativity": 0.641,
+    "decision_speed": "impulsive"
   },
-  "yoga_directives": [
-    "You communicate with structured authority. Present analysis in clear frameworks."
+  "system_prompt_modifier": "You are direct and action-oriented...",
+  "tool_preferences": {
+    "identity": "preferred",
+    "orchestration": "preferred",
+    "debugging": "available"
+  },
+  "identity_seed": "1710495000/51.5074/-0.1278",
+  "lagna": "Aries",
+  "dominant_dimensions": {
+    "execution": 0.87,
+    "analysis": -0.83,
+    "empathy": 0.66
+  },
+  "yogas": [
+    {"name": "Neecha Bhanga", "effect": "reflection_loop"}
   ],
-  "house_capabilities": {
-    "identity": 0.8,
-    "generative": 0.7,
-    "task_execution": 0.9,
-    "debugging": 0.6
-  },
-  "entropy_seed": 881923412,
-  "next_shift": "2024-03-16T00:00:00Z"
+  "retrograde": [],
+  "soul_card": "# Soul Card\n\n## LLM Configuration\n..."
 }
 ```
 
 ### POST /chart
 
-Generate a full natal chart (extended Soul Card with planetary positions).
+Full natal chart with planetary positions.
 
 **Request:** Same as `/generate`
-**Response:** Soul Card + `planets` array with longitude, sign, nakshatra, dignity for each graha.
+**Response:** Soul Card fields + `positions` (9 planets with longitude, sign, nakshatra, pada, retrograde, speed), `houses` (12), `aspects`, `combustion`.
 
 ### POST /refresh
 
-Get today's transit-adjusted parameters for an existing agent.
+Transit-adjusted parameters for an existing agent.
 
 **Request:**
 ```json
 {
-  "identity_seed": 881923412
+  "identity_seed": "1710495000/51.5074/-0.1278"
 }
 ```
 
-**Response:** Updated `dimensions`, `llm_params`, `persona` reflecting current planetary transits.
+**Response:** Updated `dimensions`, `agent_config`, `persona` reflecting current planetary transits, plus `phase`, `volatility`, `next_refresh`.
 
 ### GET /health
 
@@ -98,7 +95,7 @@ Get today's transit-adjusted parameters for an existing agent.
 ```json
 {
   "status": "ok",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }
 ```
 
@@ -121,19 +118,15 @@ Optional: x402 USDC payments via `X-PAYMENT` header (see `x402` extra dependency
 Self-hosted: none.
 Hosted API: 100 requests/minute per IP.
 
-## Integration Example
+## Python SDK
 
 ```python
-import httpx
+from clawclaw_soul import generate
 
-response = httpx.post("http://localhost:8432/generate", json={
-    "timestamp": "2024-03-15T09:30:00Z"
-})
-soul = response.json()
+soul = generate("2024-03-15T09:30:00Z", latitude=51.5074, longitude=-0.1278)
+card = soul.card
 
 # Use in LLM system prompt
-system_prompt = f"""You are an AI agent.
-Communication style: {soul['persona']['communication_style']}
-Temperature: {soul['llm_params']['temperature']}
-{' '.join(soul['yoga_directives'])}"""
+system_prompt = card["system_prompt_modifier"]
+temperature = card["agent_config"]["temperature"]
 ```

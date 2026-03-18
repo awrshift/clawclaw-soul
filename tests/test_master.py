@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from clawclaw_soul.master import (
+from app.master import (
     call_api,
     generate_soul,
     print_comparison_table,
@@ -67,7 +67,7 @@ class TestChildAgents:
 class TestGenerateSoul:
     """Test API call to generate soul (mocked)."""
 
-    @patch("clawclaw_soul.master.urllib.request.urlopen")
+    @patch("app.master.urllib.request.urlopen")
     def test_generate_soul_calls_api(self, mock_urlopen):
         mock_resp = MagicMock()
         mock_resp.read.return_value = json.dumps(SAMPLE_SOUL).encode()
@@ -81,7 +81,7 @@ class TestGenerateSoul:
         assert result["agent_config"]["temperature"] == 0.96
         assert mock_urlopen.called
 
-    @patch("clawclaw_soul.master.urllib.request.urlopen")
+    @patch("app.master.urllib.request.urlopen")
     def test_generate_soul_sends_correct_payload(self, mock_urlopen):
         mock_resp = MagicMock()
         mock_resp.read.return_value = json.dumps(SAMPLE_SOUL).encode()

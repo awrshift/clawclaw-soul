@@ -31,9 +31,9 @@ from google.genai import types
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agent_soul.engine import compute_modifiers_v2
-from agent_soul.prompt import dimensions_to_structural_prompt
-from agent_soul.soul import create_soul
+from clawclaw_soul.engine import compute_modifiers_v2
+from clawclaw_soul.prompt import dimensions_to_structural_prompt
+from clawclaw_soul.soul import create_soul
 from benchmark.proxy_metrics import compute_proxies
 
 PROMPTS_FILE = Path(__file__).parent / "prompts.json"

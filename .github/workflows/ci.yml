@@ -27,4 +27,4 @@ jobs:
         run: ruff check clawclaw_soul/ tests/
 
       - name: Test
-        run: pytest tests/ -v
+        run: pytest tests/ -p no:logfire -v

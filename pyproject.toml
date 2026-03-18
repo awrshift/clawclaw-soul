@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clawclaw-soul"
-version = "0.1.0"
+version = "0.2.0"
 description = "Open-source identity engine for AI agents. Deterministic personality from celestial mechanics."
 readme = "README.md"
 license = "MIT"
@@ -25,13 +25,15 @@ classifiers = [
 ]
 dependencies = [
     "pyswisseph>=2.10",
-    "fastapi>=0.110",
-    "uvicorn[standard]>=0.30",
     "pydantic>=2.7",
     "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
+server = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.30",
+]
 x402 = ["x402[fastapi,evm]>=2.4"]
 benchmark = [
     "numpy",
@@ -45,8 +47,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pmserhii/clawclaw-soul"
-Repository = "https://github.com/pmserhii/clawclaw-soul"
+Homepage = "https://github.com/awrshift/clawclaw-soul"
+Repository = "https://github.com/awrshift/clawclaw-soul"
 
 [tool.setuptools.packages.find]
 include = ["clawclaw_soul*"]

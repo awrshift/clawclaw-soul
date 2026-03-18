@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from clawclaw_soul.api import app
+from app.api import app
 
 client = TestClient(app)
 
@@ -26,8 +26,8 @@ class TestGenerate:
 
     VALID_PAYLOAD = {
         "timestamp": "1990-01-15T10:30:00Z",
-        "latitude": 55.7558,
-        "longitude": 37.6173,
+        "latitude": 51.5074,
+        "longitude": -0.1278,
     }
 
     def test_generate_returns_200(self):
@@ -211,8 +211,8 @@ class TestRegenerate:
         """Regenerate from identity_seed must produce identical params."""
         payload = {
             "timestamp": "1990-01-15T10:30:00+00:00",
-            "latitude": 55.7558,
-            "longitude": 37.6173,
+            "latitude": 51.5074,
+            "longitude": -0.1278,
         }
         r1 = client.post("/generate", json=payload)
         seed = r1.json()["identity_seed"]

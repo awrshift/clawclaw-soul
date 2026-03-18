@@ -9,7 +9,7 @@ Open-source identity engine for AI agents. Deterministic personality from epheme
 [Quickstart](#quickstart) · [Docs](https://clawclawsoul.com) · [GitHub Action](#github-action) · [Benchmark](#benchmark)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-175%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-180%20passed-brightgreen.svg)]()
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)]()
 
 </div>
@@ -45,19 +45,27 @@ Output:
 
 ```json
 {
-  "agent_id": "c_88a91",
-  "dimensions": {
-    "temperature": 0.82,
-    "assertiveness": 0.91,
-    "verbosity": 0.34,
-    "analytical": 0.77,
-    "creativity": 0.63,
-    "empathy": 0.45,
-    "risk_tolerance": 0.88
+  "agent_config": {
+    "temperature": 0.68,
+    "max_tokens": 609,
+    "top_p": 0.87,
+    "frequency_penalty": 0.09
   },
-  "communication_style": "direct",
-  "entropy_seed": 881923412,
-  "next_shift": "2024-03-16T00:00:00Z"
+  "persona": {
+    "assertiveness": 0.743,
+    "empathy": 0.761,
+    "creativity": 0.641,
+    "decision_speed": "impulsive"
+  },
+  "lagna": "Aries",
+  "identity_seed": "1710495000/0.0000/0.0000",
+  "dominant_dimensions": {
+    "execution": 0.87,
+    "analysis": -0.83,
+    "empathy": 0.66
+  },
+  "system_prompt_modifier": "...",
+  "soul_card": "..."
 }
 ```
 
@@ -67,32 +75,14 @@ Output:
 |------|-------------|--------|
 | **1. Input** | Unix timestamp or ISO date | `1709241600` |
 | **2. Ephemeris** | Swiss Ephemeris computes exact planetary positions (sub-arcsecond) | Sun 24.2 Pisces, Moon 8.7 Leo, ... |
-| **3. Dimensions** | 9 planets map to 9 behavioral dimensions via BPHS tables | authority, empathy, execution, ... |
-| **4. Soul Card** | Dimensions compute LLM params: temperature, max_tokens, persona | JSON identity document |
+| **3. Dimensions** | 9 planets map to 9 behavioral dimensions via BPHS tables | authority, empathy, execution, analysis, wisdom, aesthetics, restriction, innovation, compression |
+| **4. Soul Card** | Dimensions compute LLM params: temperature, max_tokens, persona | JSON identity document (`.card`) |
 
 Daily transit updates shift parameters. Temperature rises, verbosity drops. Every change is reproducible and verifiable against any ephemeris table.
 
-## GitHub Action
+## GitHub Action (coming soon)
 
-Auto-update your agent's identity daily. Add this to any repo with a `SOUL.md`:
-
-```yaml
-# .github/workflows/animate.yml
-name: Animate Soul
-on:
-  schedule:
-    - cron: '0 6 * * *'
-
-jobs:
-  animate:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: clawclaw-soul/animate@v1
-```
-
-The action reads `SOUL.md`, computes today's transit vector, and commits `SOUL-TRANSITS.md` with updated parameters. Zero config.
+Auto-update your agent's identity daily. A GitHub Action (`clawclaw-soul/animate@v1`) is under development that reads `SOUL.md`, computes today's transit vector, and commits `SOUL-TRANSITS.md` with updated parameters.
 
 ## Architecture
 

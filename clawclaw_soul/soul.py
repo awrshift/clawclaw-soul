@@ -701,6 +701,12 @@ class AgentSoul:
             "combustion": {k: v for k, v in self.combustion.items() if v},
         }
 
+    @property
+    def card(self) -> dict:
+        """Soul Card: complete LLM config derived from this soul."""
+        from clawclaw_soul.params import soul_to_params
+        return soul_to_params(self)
+
 
 def create_soul(seed: int | None = None) -> AgentSoul:
     """Create a new agent soul with random birth data."""
@@ -711,4 +717,40 @@ def create_soul(seed: int | None = None) -> AgentSoul:
         longitude=birth["longitude"],
         tz_offset=birth["tz_offset"],
         seed=seed,
+    )
+
+
+def generate(
+    timestamp: str | datetime | None = None,
+    *,
+    latitude: float | None = None,
+    longitude: float | None = None,
+    tz_offset: float = 0.0,
+    seed: int | None = None,
+) -> AgentSoul:
+    """Generate an AgentSoul from a timestamp.
+
+    Simplest usage:
+        soul = generate("2024-03-15T09:30:00Z")
+        print(soul.card)
+
+    With coordinates:
+        soul = generate("2024-03-15T09:30:00Z", latitude=40.7, longitude=-74.0)
+
+    Random:
+        soul = generate()
+    """
+    if timestamp is None:
+        return create_soul(seed)
+
+    if isinstance(timestamp, str):
+        birth_dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    else:
+        birth_dt = timestamp
+
+    return AgentSoul(
+        birth_dt=birth_dt,
+        latitude=latitude if latitude is not None else 0.0,
+        longitude=longitude if longitude is not None else 0.0,
+        tz_offset=tz_offset,
     )
