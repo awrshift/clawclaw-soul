@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="banner.png" alt="ClawClaw Soul — Open-source identity engine for AI agents" width="100%">
+<img src="banner.png" alt="ClawClaw Soul — Deterministic, time-drifting personalities for LLM agents" width="100%">
 
-**Celestial mechanics for synthetic souls.**
+**Deterministic, time-drifting personalities for LLM agents.**
 
-Open-source identity engine for AI agents. Deterministic personality from ephemeris data.
+Your agents all think the same. This fixes that.
 
-[Quickstart](#quickstart) · [Docs](https://clawclawsoul.com) · [GitHub Action](#github-action) · [Benchmark](#benchmark)
+[Quickstart](#quickstart) · [Preset Epochs](#preset-epochs) · [Compatibility](#agent-compatibility) · [MCP Server](#mcp-server)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-211%20passed-brightgreen.svg)]()
@@ -17,17 +17,19 @@ Open-source identity engine for AI agents. Deterministic personality from epheme
 
 ---
 
-Deterministic personality parameters for AI agents via celestial mechanics. Same timestamp, same soul. Always.
+## The problem
+
+Multi-agent systems suffer from **mode collapse**: 5 agents on the same model produce the same bland, agreeable output. `random.seed()` gives static diversity -- flat and contextless. You need agents that think differently AND evolve over time.
+
+## The solution
+
+ClawClaw Soul generates **multi-dimensional cognitive profiles** from deterministic orbital mechanics. Each agent gets a unique behavioral state vector that naturally **drifts over time** -- giving agents evolving friction, compatibility, and "seasons" without needing a database.
 
 ```
-Timestamp --> Swiss Ephemeris --> 9 Planetary Dimensions --> Soul Card (JSON)
+Timestamp --> Orbital Mechanics --> 9 Behavioral Dimensions --> Soul Card (JSON)
 ```
 
-If a random seed gives your agent static identity, ClawClaw Soul gives it one that **evolves deterministically** -- every day, based on real planetary positions.
-
-## Works with any LLM
-
-Claude, GPT, Gemini, Llama, Mistral -- if it accepts a system prompt and temperature, it works.
+Same timestamp = same personality. Always. But as real-world time moves forward, transit computations shift your agent's parameters deterministically.
 
 ## Quickstart
 
@@ -58,36 +60,80 @@ Output:
     "creativity": 0.641,
     "decision_speed": "impulsive"
   },
-  "lagna": "Aries",
-  "identity_seed": "1710495000/0.0000/0.0000",
+  "system_prompt_modifier": "You lead with confidence...",
   "dominant_dimensions": {
     "execution": 0.87,
     "analysis": -0.83,
     "empathy": 0.66
-  },
-  "system_prompt_modifier": "...",
-  "soul_card": "..."
+  }
 }
+```
+
+Works with **any LLM**: Claude, GPT, Gemini, Llama, Mistral -- if it accepts a system prompt and temperature, it works.
+
+## Preset Epochs
+
+Initialize agents from notable temporal configurations. Each epoch produces a unique, deterministic cognitive profile.
+
+```python
+from clawclaw_soul import generate, compatibility
+
+# Epoch 55-V: High aesthetic bias, rapid course-corrections, reality distortion loops.
+# Ideal for product/design critique agents.
+critic = generate("1955-02-24T19:15:00-08:00", latitude=37.7749, longitude=-122.4194)
+
+# Epoch 69-X: Low empathy, high structural rigidity, aggressively rejects malformed input.
+# Perfect for code review agents.
+reviewer = generate("1969-12-28T12:00:00+02:00", latitude=60.1699, longitude=24.9384)
+
+# Epoch 15-A: Stable analytical baseline + sudden lateral reasoning spikes.
+# Excellent for research/architecture agents.
+researcher = generate("1815-12-10T12:00:00+00:00", latitude=51.5074, longitude=-0.1278)
+
+# Check friction before pairing
+score = compatibility(critic, reviewer)
+print(f"Friction: {score['synergy']}/10")  # Low synergy = high friction = productive tension
+```
+
+## Agent Compatibility
+
+Score how well two agents work together before they interact. Route tasks to synergistic pairs, or deliberately introduce friction for creative tension.
+
+```python
+from clawclaw_soul import generate, compatibility
+
+agent_a = generate("2024-03-15T09:30:00Z")
+agent_b = generate("1995-06-15T08:30:00Z")
+
+result = compatibility(agent_a, agent_b)
+# {
+#   "synergy": 7.28,        # 0-10 (higher = more aligned)
+#   "tension": false,        # true if fundamental conflict detected
+#   "dim_alignment": {...},  # per-dimension alignment scores
+#   "summary": "Moderately compatible (synergy: 7.28/10)"
+# }
+
+# Dynamic compatibility (factors in current temporal drift)
+from datetime import datetime, timezone
+now = datetime.now(timezone.utc)
+dynamic = compatibility(agent_a, agent_b, timestamp=now)
 ```
 
 ## How it works
 
 | Step | What happens | Output |
 |------|-------------|--------|
-| **1. Input** | Unix timestamp or ISO date | `1709241600` |
-| **2. Ephemeris** | Swiss Ephemeris computes exact planetary positions (sub-arcsecond) | Sun 24.2 Pisces, Moon 8.7 Leo, ... |
-| **3. Dimensions** | 9 planets map to 9 behavioral dimensions via BPHS tables | authority, empathy, execution, analysis, wisdom, aesthetics, restriction, innovation, compression |
-| **4. Soul Card** | Dimensions compute LLM params: temperature, max_tokens, persona | JSON identity document (`.card`) |
+| **1. Input** | Timestamp + coordinates (the "epoch") | `1710495000` |
+| **2. Orbital Math** | Swiss Ephemeris computes exact positions of 9 celestial bodies | 9 longitude vectors |
+| **3. Dimensions** | Positions map to 9 behavioral dimensions via classical reference tables | authority, empathy, execution, analysis, wisdom, aesthetics, restriction, innovation, compression |
+| **4. Pattern Detection** | 58 detectors identify behavioral amplifiers from body configurations | Risk amplifiers, analytical boosts, creative tension patterns |
+| **5. Soul Card** | Dimensions + patterns compile to LLM params and system prompt | JSON config (`.card`) |
 
-Daily transit updates shift parameters. Temperature rises, verbosity drops. Every change is reproducible and verifiable against any ephemeris table.
+**Why not `random.seed()`?** A basic PRNG is flat and contextless. Orbital ephemeris provides a predictable, multi-dimensional, cyclical entropy source. Agents get "seasons" that gradually drift over weeks and months, returning to baseline predictably. It mathematically mimics organic variance without requiring a database to store historical state.
 
-## GitHub Action (coming soon)
+## SOUL.md -- persistent identity for your agent
 
-Auto-update your agent's identity daily. A GitHub Action (`clawclaw-soul/animate@v1`) is under development that reads `SOUL.md`, computes today's transit vector, and commits `SOUL-TRANSITS.md` with updated parameters.
-
-## SOUL.md — persistent identity for your agent
-
-Add a `SOUL.md` to any repo. It's like `AGENTS.md`, but for identity.
+Add a `SOUL.md` to any repo. It's like `AGENTS.md`, but for behavioral configuration.
 
 ```bash
 # Generate
@@ -97,29 +143,7 @@ clawclaw-soul init --name "MyAgent" --timestamp "2024-03-15T09:30:00Z"
 clawclaw-soul verify SOUL.md
 ```
 
-The generated `SOUL.md` contains LLM configuration, persona traits, 9 behavioral dimensions, and a system prompt — all deterministically derived from the birth timestamp.
-
 See [examples/](examples/) for sample SOUL.md files.
-
-## Architecture
-
-```
-clawclaw_soul/         # pip install clawclaw-soul (pure library)
-  soul.py              # AgentSoul, generate(), .card, SOUL.md gen/verify
-  yogas.py             # 58 yoga detectors (adapted from Jyotish engine)
-  compatibility.py     # Agent compatibility scoring (synergy, tension)
-  params.py            # Planet-to-Parameter Engine (9 dims -> LLM config)
-  engine.py            # Dasha overlays, transit dims, yoga-dasha resonance
-  ephemeris.py         # pyswisseph wrapper (sidereal, Lahiri ayanamsha)
-  tables.py            # BPHS reference tables + nakshatra attributes
-  transit.py           # Gochar transit scoring
-  dasha.py             # Vimshottari dasha periods
-
-app/                   # Self-hosting (Docker, not in pip)
-  api.py               # FastAPI (5 endpoints)
-  master.py            # Master Agent demo
-  refresh.py           # Daily transit refresh
-```
 
 ## MCP Server
 
@@ -144,21 +168,24 @@ Add to your MCP config:
 
 Available tools: `generate_soul`, `init_soul_md`, `verify_identity`, `get_daily_drift`.
 
-## Benchmark
+## Architecture
 
-The Celestial Variance Benchmark (CVB) proves that planetary-seeded prompts produce statistically different LLM outputs:
+```
+clawclaw_soul/         # pip install clawclaw-soul (pure library)
+  soul.py              # AgentSoul, generate(), .card, SOUL.md gen/verify
+  yogas.py             # 58 pattern detectors (behavioral amplifiers)
+  compatibility.py     # Agent compatibility scoring (synergy, tension)
+  params.py            # Dimension-to-Parameter Engine (9 dims -> LLM config)
+  engine.py            # Temporal overlays, transit dims, pattern resonance
+  ephemeris.py         # Swiss Ephemeris wrapper (sidereal, Lahiri ayanamsha)
+  tables.py            # Classical reference tables + sector attributes
+  transit.py           # Transit scoring (temporal drift)
+  dasha.py             # Long-cycle period computation
 
-| Metric | Result |
-|--------|--------|
-| Structural signal (FFT) | **5.8 sigma** |
-| Semantic variance | **3.49 sigma** |
-| Emotional divergence | **3.45 sigma** |
-
-Full benchmark code in [`benchmark/`](benchmark/). Run it yourself:
-
-```bash
-pip install clawclaw-soul[benchmark]
-python benchmark/cvb_runner.py --responses 540
+app/                   # Self-hosting (Docker, not in pip)
+  api.py               # FastAPI (5 endpoints)
+  master.py            # Master Agent demo
+  refresh.py           # Daily transit refresh
 ```
 
 ## Self-hosting
@@ -172,21 +199,17 @@ docker compose up -d
 
 Endpoints: `/generate`, `/chart`, `/refresh`, `/health`
 
-## ClawClaw Soul is right for you if
+## Benchmark
 
-- You run **multi-agent systems** and want cognitive diversity, not clones
-- You want agent personality that **evolves over time**, not static config
-- You need **deterministic, reproducible** identity (not random seeds)
-- You care about **verifiable** parameters (check against any ephemeris table)
-- You want to **self-host** everything with no vendor lock-in
+Different epochs produce statistically different LLM outputs. The Celestial Variance Benchmark (CVB) measures divergence across 540 responses:
 
-## What it's not
+| Metric | Result |
+|--------|--------|
+| Structural divergence | **5.8 sigma** |
+| Semantic variance | **3.49 sigma** |
+| Behavioral spread | **3.45 sigma** |
 
-| | |
-|---|---|
-| **Not a horoscope** | We use the same math (Swiss Ephemeris). We don't interpret it mystically. |
-| **Not a random seed** | Parameters drift daily via transits. Random seeds can't do that. |
-| **Not a chatbot** | Soul Card produces identity data. Your architecture decides what to do with it. |
+Full code in [`benchmark/`](benchmark/).
 
 ## Contributing
 

@@ -4,11 +4,11 @@ ClawClaw Soul is under active development. Here's what's coming.
 
 ## Done
 
-- [x] Core engine: 9 planetary dimensions mapped to LLM parameters
-- [x] Soul Card generation from any timestamp
-- [x] Daily transit refresh (parameters drift deterministically)
+- [x] Core engine: 9 behavioral dimensions from orbital mechanics
+- [x] Soul Card generation from any temporal epoch
+- [x] Temporal drift (parameters evolve deterministically over time)
 - [x] Self-hostable API (FastAPI + Docker)
-- [x] CVB Benchmark: 5.8sigma structural proof
+- [x] Divergence benchmark: 5.8 sigma structural proof
 - [x] Landing page + custom domain (clawclawsoul.com)
 - [x] Design system (102 tokens, Astrolabe palette)
 - [x] Public API: `generate()` + `.card` property
@@ -16,10 +16,10 @@ ClawClaw Soul is under active development. Here's what's coming.
 - [x] MCP Server (4 tools for Claude Desktop / Cursor)
 - [x] PyPI: `pip install clawclaw-soul`
 - [x] VPS deployment (Docker, hardened)
-- [x] **58 yoga detectors** — adapted from Jyotish engine (10x behavioral diversity)
-- [x] **Agent compatibility** — synergy scoring, tension detection, dynamic compat
-- [x] **Dasha-yoga resonance** — yoga effects amplified by active dasha lords
-- [x] **Nakshatra attributes** — gana + motivation for all 27 nakshatras
+- [x] **58 pattern detectors** — 10x behavioral diversity
+- [x] **Agent compatibility** — synergy scoring, tension detection, dynamic mode
+- [x] **Period-pattern resonance** — behavioral amplifiers modulated by active periods
+- [x] **Sector attributes** — classification + motivation for all 27 sectors
 
 ## Now
 
@@ -29,7 +29,8 @@ ClawClaw Soul is under active development. Here's what's coming.
 ## Next
 
 - [ ] `/swarm/seed` — batch-generate N diverse agent identities
-- [ ] **Ashtakavarga** — precision transit scoring
+- [ ] **Precision transit scoring** — 672-rule bindu system for finer drift
+- [ ] **Framework integrations** — CrewAI, LangGraph, AutoGen adapters
 
 ## Future
 

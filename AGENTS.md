@@ -14,7 +14,7 @@ Self-hosted: `http://localhost:8432`
 
 ### POST /generate
 
-Generate a Soul Card from a birth timestamp + coordinates.
+Generate a Soul Card from a temporal epoch (timestamp + coordinates).
 
 **Request:**
 ```json
@@ -72,10 +72,10 @@ Generate a Soul Card from a birth timestamp + coordinates.
 
 ### POST /chart
 
-Full natal chart with planetary positions.
+Full chart with orbital body positions.
 
 **Request:** Same as `/generate`
-**Response:** Soul Card fields + `positions` (9 planets with longitude, sign, nakshatra, pada, retrograde, speed), `houses` (12), `aspects`, `combustion`.
+**Response:** Soul Card fields + `positions` (9 orbital bodies with longitude, sector, pada, vector direction, speed), `houses` (12), `aspects`, `combustion`.
 
 ### POST /refresh
 
@@ -88,7 +88,7 @@ Transit-adjusted parameters for an existing agent.
 }
 ```
 
-**Response:** Updated `dimensions`, `agent_config`, `persona` reflecting current planetary transits, plus `phase`, `volatility`, `next_refresh`.
+**Response:** Updated `dimensions`, `agent_config`, `persona` reflecting current temporal drift, plus `phase`, `volatility`, `next_refresh`.
 
 ### GET /health
 
