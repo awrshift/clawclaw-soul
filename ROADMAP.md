@@ -16,6 +16,10 @@ ClawClaw Soul is under active development. Here's what's coming.
 - [x] MCP Server (4 tools for Claude Desktop / Cursor)
 - [x] PyPI: `pip install clawclaw-soul`
 - [x] VPS deployment (Docker, hardened)
+- [x] **58 yoga detectors** — adapted from Jyotish engine (10x behavioral diversity)
+- [x] **Agent compatibility** — synergy scoring, tension detection, dynamic compat
+- [x] **Dasha-yoga resonance** — yoga effects amplified by active dasha lords
+- [x] **Nakshatra attributes** — gana + motivation for all 27 nakshatras
 
 ## Now
 
@@ -25,9 +29,7 @@ ClawClaw Soul is under active development. Here's what's coming.
 ## Next
 
 - [ ] `/swarm/seed` — batch-generate N diverse agent identities
-- [ ] **150 yoga integration** — 25x increase in behavioral diversity
 - [ ] **Ashtakavarga** — precision transit scoring
-- [ ] **Agent compatibility** — Ashtakoot matching for swarm orchestration
 
 ## Future
 

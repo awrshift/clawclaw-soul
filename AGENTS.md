@@ -62,7 +62,8 @@ Generate a Soul Card from a birth timestamp + coordinates.
     "empathy": 0.66
   },
   "yogas": [
-    {"name": "Neecha Bhanga", "effect": "reflection_loop"}
+    {"name": "Shasha Yoga", "effect": "restriction_authority"},
+    {"name": "Raja Yoga", "effect": "authority_execution"}
   ],
   "retrograde": [],
   "soul_card": "# Soul Card\n\n## LLM Configuration\n..."
@@ -95,7 +96,7 @@ Transit-adjusted parameters for an existing agent.
 ```json
 {
   "status": "ok",
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
 ```
 
@@ -121,7 +122,7 @@ Hosted API: 100 requests/minute per IP.
 ## Python SDK
 
 ```python
-from clawclaw_soul import generate
+from clawclaw_soul import generate, compatibility
 
 soul = generate("2024-03-15T09:30:00Z", latitude=51.5074, longitude=-0.1278)
 card = soul.card
@@ -129,4 +130,9 @@ card = soul.card
 # Use in LLM system prompt
 system_prompt = card["system_prompt_modifier"]
 temperature = card["agent_config"]["temperature"]
+
+# Agent compatibility (v0.3.0+)
+other = generate("1995-06-15T08:30:00Z")
+result = compatibility(soul, other)
+# result: {"synergy": 7.28, "tension": false, "dim_alignment": {...}, "summary": "..."}
 ```

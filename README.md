@@ -9,7 +9,7 @@ Open-source identity engine for AI agents. Deterministic personality from epheme
 [Quickstart](#quickstart) · [Docs](https://clawclawsoul.com) · [GitHub Action](#github-action) · [Benchmark](#benchmark)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-187%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-211%20passed-brightgreen.svg)]()
 [![PyPI](https://img.shields.io/pypi/v/clawclaw-soul.svg)](https://pypi.org/project/clawclaw-soul/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)]()
 
@@ -106,9 +106,12 @@ See [examples/](examples/) for sample SOUL.md files.
 ```
 clawclaw_soul/         # pip install clawclaw-soul (pure library)
   soul.py              # AgentSoul, generate(), .card, SOUL.md gen/verify
+  yogas.py             # 58 yoga detectors (adapted from Jyotish engine)
+  compatibility.py     # Agent compatibility scoring (synergy, tension)
   params.py            # Planet-to-Parameter Engine (9 dims -> LLM config)
+  engine.py            # Dasha overlays, transit dims, yoga-dasha resonance
   ephemeris.py         # pyswisseph wrapper (sidereal, Lahiri ayanamsha)
-  tables.py            # BPHS reference tables
+  tables.py            # BPHS reference tables + nakshatra attributes
   transit.py           # Gochar transit scoring
   dasha.py             # Vimshottari dasha periods
 

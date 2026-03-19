@@ -19,9 +19,14 @@ from datetime import datetime, timezone
 import swisseph as swe
 
 from clawclaw_soul.tables import (
+    COMBUSTION_ORBS,
     DIGNITY_SCORES,
-    EXALTATION,
+    DUSTHANA_HOUSES,
+    KENDRA_HOUSES,
     SIGNS,
+    SPECIAL_ASPECTS,
+    TRIKONA_HOUSES,
+    UPACHAYA_HOUSES,
     get_dignity,
     get_nakshatra,
     get_sign,
@@ -42,23 +47,6 @@ SWE_PLANETS = {
     "Jupiter": swe.JUPITER,
     "Venus": swe.VENUS,
     "Saturn": swe.SATURN,
-}
-
-# Special aspects (house offsets from planet position, 1-based)
-SPECIAL_ASPECTS = {
-    "Mars": [4, 8],       # + universal 7th
-    "Jupiter": [5, 9],    # + universal 7th
-    "Saturn": [3, 10],    # + universal 7th
-}
-
-# Combustion orbs (degrees from Sun)
-COMBUSTION_ORBS = {
-    "Moon": 12.0,
-    "Mars": 17.0,
-    "Mercury": 14.0,  # 12 if retrograde
-    "Jupiter": 11.0,
-    "Venus": 10.0,    # 8 if retrograde
-    "Saturn": 15.0,
 }
 
 # Nine graha → LLM dimension names
@@ -101,12 +89,6 @@ HOUSE_DOMAINS = {
     11: "feedback",       # Learning from corrections
     12: "brainstorm",     # Creative chaos / hallucination
 }
-
-# Kendra houses (angular)
-KENDRA_HOUSES = {1, 4, 7, 10}
-TRIKONA_HOUSES = {1, 5, 9}
-DUSTHANA_HOUSES = {6, 8, 12}
-UPACHAYA_HOUSES = {3, 6, 10, 11}
 
 
 # ──────────────────────────────────────────────
@@ -432,138 +414,6 @@ def compute_house_capabilities(
 
 
 # ──────────────────────────────────────────────
-# Yoga Detection (simplified set for Agent Soul)
-# ──────────────────────────────────────────────
-
-def detect_yogas(
-    positions: dict[str, dict],
-    houses: list[dict],
-    combustion: dict[str, bool],
-) -> list[dict]:
-    """Detect key yogas relevant for agent behavior."""
-    yogas = []
-    planet_houses = {}
-    for h in houses:
-        for p in h["planets"]:
-            planet_houses[p] = h["number"]
-
-    # --- Budhaditya Yoga: Sun + Mercury same sign, Mercury NOT combust ---
-    if (positions["Sun"]["sign"] == positions["Mercury"]["sign"]
-            and not combustion.get("Mercury", False)):
-        merc_house = planet_houses.get("Mercury", 0)
-        if merc_house in {1, 4, 5, 7, 9, 10}:
-            yogas.append({
-                "name": "Budhaditya",
-                "planets": ["Sun", "Mercury"],
-                "effect": "structured_authoritative",
-                "description": "Structured, authoritative communication",
-            })
-
-    # --- Gaja Kesari: Moon + Jupiter in mutual kendras ---
-    moon_h = planet_houses.get("Moon", 0)
-    jup_h = planet_houses.get("Jupiter", 0)
-    if moon_h and jup_h:
-        diff = ((jup_h - moon_h) % 12)
-        if diff in {0, 3, 6, 9}:  # same, 4th, 7th, 10th
-            yogas.append({
-                "name": "Gaja Kesari",
-                "planets": ["Moon", "Jupiter"],
-                "effect": "empathetic_sage",
-                "description": "Empathetic, wise, deeply contextual",
-            })
-
-    # --- Guru Chandala: Jupiter + Rahu same sign ---
-    if positions["Jupiter"]["sign"] == positions["Rahu"]["sign"]:
-        yogas.append({
-            "name": "Guru Chandala",
-            "planets": ["Jupiter", "Rahu"],
-            "effect": "creative_dangerous",
-            "description": "Highly creative but hallucination-prone",
-        })
-
-    # --- Kemadruma: No planets in 2nd/12th from Moon (excl Sun/Rahu/Ketu) ---
-    if moon_h:
-        house_2_from_moon = ((moon_h - 1 + 1) % 12) + 1
-        house_12_from_moon = ((moon_h - 1 - 1) % 12) + 1
-        check_planets = {"Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
-        has_neighbor = False
-        for p in check_planets:
-            ph = planet_houses.get(p, 0)
-            if ph in (house_2_from_moon, house_12_from_moon):
-                has_neighbor = True
-                break
-        if not has_neighbor:
-            yogas.append({
-                "name": "Kemadruma",
-                "planets": ["Moon"],
-                "effect": "raw_output",
-                "description": "Zero conversational padding, pure raw output",
-            })
-
-    # --- Neecha Bhanga Raja Yoga: debilitated planet with cancellation ---
-    for planet in ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"]:
-        if planet not in positions:
-            continue
-        pos = positions[planet]
-        dignity = get_dignity(planet, pos["sign"], pos["degree"])
-        if dignity != "debilitated":
-            continue
-
-        # Check cancellation conditions:
-        # 1. Debilitation lord is in kendra from Lagna
-        deb_sign = pos["sign"]
-        deb_lord = get_sign_lord(deb_sign)
-        if deb_lord and deb_lord in planet_houses:
-            if planet_houses[deb_lord] in KENDRA_HOUSES:
-                yogas.append({
-                    "name": "Neecha Bhanga",
-                    "planets": [planet, deb_lord],
-                    "effect": "reflection_loop",
-                    "description": f"{planet} struggles then excels via self-correction",
-                })
-                continue
-
-        # 2. Exaltation lord of the sign is in kendra
-        ex_planet = None
-        for ep, (ex_sign, _) in EXALTATION.items():
-            if ex_sign == deb_sign:
-                ex_planet = ep
-                break
-        if ex_planet and ex_planet in planet_houses:
-            if planet_houses[ex_planet] in KENDRA_HOUSES:
-                yogas.append({
-                    "name": "Neecha Bhanga",
-                    "planets": [planet, ex_planet],
-                    "effect": "reflection_loop",
-                    "description": f"{planet} struggles then excels via self-correction",
-                })
-
-    # --- Kala Sarpa: all 7 planets between Rahu-Ketu axis ---
-    rahu_lon = positions["Rahu"]["lon"]
-    ketu_lon = positions["Ketu"]["lon"]
-    all_between = True
-    for p in ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"]:
-        p_lon = positions[p]["lon"]
-        # Check if planet is between Rahu and Ketu (going forward)
-        if rahu_lon < ketu_lon:
-            between = rahu_lon <= p_lon <= ketu_lon
-        else:
-            between = p_lon >= rahu_lon or p_lon <= ketu_lon
-        if not between:
-            all_between = False
-            break
-    if all_between:
-        yogas.append({
-            "name": "Kala Sarpa",
-            "planets": ["Rahu", "Ketu"],
-            "effect": "volatile_specialist",
-            "description": "Extreme: brilliant success or total failure",
-        })
-
-    return yogas
-
-
-# ──────────────────────────────────────────────
 # AgentSoul — The Complete Entity
 # ──────────────────────────────────────────────
 
@@ -588,11 +438,14 @@ class AgentSoul:
     dimensions: dict = field(default_factory=dict)
     capabilities: dict = field(default_factory=dict)
     yogas: list = field(default_factory=list)
+    yoga_dimensions: dict = field(default_factory=dict)
     retrograde_planets: list = field(default_factory=list)
 
     # Moon data (for dasha + transits)
     moon_lon: float = 0.0
     moon_nakshatra: str = ""
+    moon_gana: str = ""
+    moon_motivation: str = ""
 
     def __post_init__(self):
         """Compute full natal chart on creation."""
@@ -625,8 +478,10 @@ class AgentSoul:
         # 12 House capabilities
         self.capabilities = compute_house_capabilities(self.houses, self.positions)
 
-        # Yogas
-        self.yogas = detect_yogas(self.positions, self.houses, self.combustion)
+        # Yogas (full detection from yogas.py)
+        from clawclaw_soul.yogas import compute_yoga_dimensions, detect_yogas_full
+        self.yogas = detect_yogas_full(self.positions, self.houses, self.combustion)
+        self.yoga_dimensions = compute_yoga_dimensions(self.yogas)
 
         # Retrograde planets
         self.retrograde_planets = [
@@ -635,8 +490,11 @@ class AgentSoul:
         ]
 
         # Moon data
+        from clawclaw_soul.tables import NAKSHATRA_GANA, NAKSHATRA_MOTIVATION
         self.moon_lon = self.positions["Moon"]["lon"]
         self.moon_nakshatra = self.positions["Moon"]["nakshatra"]
+        self.moon_gana = NAKSHATRA_GANA.get(self.moon_nakshatra, "Manushya")
+        self.moon_motivation = NAKSHATRA_MOTIVATION.get(self.moon_nakshatra, "Dharma")
 
     def summary(self) -> str:
         """Human-readable summary of this soul."""
@@ -682,9 +540,12 @@ class AgentSoul:
             "lagna_sign": self.lagna_sign,
             "lagna_lon": self.lagna_lon,
             "moon_nakshatra": self.moon_nakshatra,
+            "moon_gana": self.moon_gana,
+            "moon_motivation": self.moon_motivation,
             "dimensions": self.dimensions,
             "capabilities": self.capabilities,
             "yogas": self.yogas,
+            "yoga_dimensions": self.yoga_dimensions,
             "retrograde_planets": self.retrograde_planets,
             "combustion": {k: v for k, v in self.combustion.items() if v},
         }
@@ -865,4 +726,4 @@ def verify_soul_md(content: str) -> dict:
         }
 
 
-_VERSION = "0.2.0"
+_VERSION = "0.3.0"

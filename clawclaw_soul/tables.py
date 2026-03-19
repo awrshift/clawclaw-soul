@@ -191,6 +191,81 @@ DIGNITY_SCORES = {
 }
 
 
+# --- Derived sign-only dicts (for yoga detectors) ---
+
+EXALTATION_SIGN: dict[str, str] = {p: s for p, (s, _) in EXALTATION.items()}
+DEBILITATION_SIGN: dict[str, str] = {p: s for p, (s, _) in DEBILITATION.items()}
+
+SIGN_LORDS: dict[str, str] = {
+    "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury",
+    "Cancer": "Moon", "Leo": "Sun", "Virgo": "Mercury",
+    "Libra": "Venus", "Scorpio": "Mars", "Sagittarius": "Jupiter",
+    "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter",
+}
+
+# --- Planet classifications ---
+
+NATURAL_BENEFICS = {"Jupiter", "Venus", "Mercury", "Moon"}
+NATURAL_MALEFICS = {"Sun", "Mars", "Saturn", "Rahu", "Ketu"}
+
+# --- House classifications ---
+
+KENDRA_HOUSES = {1, 4, 7, 10}
+TRIKONA_HOUSES = {1, 5, 9}
+DUSTHANA_HOUSES = {6, 8, 12}
+UPACHAYA_HOUSES = {3, 6, 10, 11}
+
+# --- Special aspects (house offsets from planet position, 1-based) ---
+
+SPECIAL_ASPECTS = {
+    "Mars": [4, 8],       # + universal 7th
+    "Jupiter": [5, 9],    # + universal 7th
+    "Saturn": [3, 10],    # + universal 7th
+}
+
+# --- Combustion orbs (degrees from Sun) ---
+
+COMBUSTION_ORBS: dict[str, float] = {
+    "Moon": 12.0,
+    "Mars": 17.0,
+    "Mercury": 14.0,
+    "Jupiter": 11.0,
+    "Venus": 10.0,
+    "Saturn": 15.0,
+}
+
+COMBUSTION_ORBS_RETROGRADE: dict[str, float] = {
+    "Mercury": 12.0,
+    "Venus": 8.0,
+}
+
+# --- Nakshatra attributes ---
+
+NAKSHATRA_GANA: dict[str, str] = {
+    "Ashwini": "Deva", "Bharani": "Manushya", "Krittika": "Rakshasa",
+    "Rohini": "Manushya", "Mrigashira": "Deva", "Ardra": "Manushya",
+    "Punarvasu": "Deva", "Pushya": "Deva", "Ashlesha": "Rakshasa",
+    "Magha": "Rakshasa", "Purva Phalguni": "Manushya", "Uttara Phalguni": "Manushya",
+    "Hasta": "Deva", "Chitra": "Rakshasa", "Swati": "Deva",
+    "Vishakha": "Rakshasa", "Anuradha": "Deva", "Jyeshtha": "Rakshasa",
+    "Moola": "Rakshasa", "Purva Ashadha": "Manushya", "Uttara Ashadha": "Manushya",
+    "Shravana": "Deva", "Dhanishta": "Rakshasa", "Shatabhisha": "Rakshasa",
+    "Purva Bhadrapada": "Manushya", "Uttara Bhadrapada": "Manushya", "Revati": "Deva",
+}
+
+NAKSHATRA_MOTIVATION: dict[str, str] = {
+    "Ashwini": "Dharma", "Bharani": "Artha", "Krittika": "Kama",
+    "Rohini": "Moksha", "Mrigashira": "Moksha", "Ardra": "Kama",
+    "Punarvasu": "Artha", "Pushya": "Dharma", "Ashlesha": "Dharma",
+    "Magha": "Artha", "Purva Phalguni": "Kama", "Uttara Phalguni": "Moksha",
+    "Hasta": "Moksha", "Chitra": "Kama", "Swati": "Artha",
+    "Vishakha": "Dharma", "Anuradha": "Dharma", "Jyeshtha": "Artha",
+    "Moola": "Kama", "Purva Ashadha": "Moksha", "Uttara Ashadha": "Moksha",
+    "Shravana": "Kama", "Dhanishta": "Artha", "Shatabhisha": "Dharma",
+    "Purva Bhadrapada": "Dharma", "Uttara Bhadrapada": "Artha", "Revati": "Kama",
+}
+
+
 def get_sign(longitude: float) -> str:
     """Get zodiac sign from sidereal longitude (0-360)."""
     return SIGNS[int(longitude // 30) % 12]

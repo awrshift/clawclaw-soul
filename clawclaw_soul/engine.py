@@ -303,6 +303,55 @@ def compute_transit_dimensions(
     return dimensions
 
 
+def compute_dasha_yoga_boost(
+    soul: "AgentSoul",  # noqa: F821
+    active_period: dict | None,
+) -> dict[str, float]:
+    """Compute dasha-yoga resonance boost.
+
+    If current MD lord matches a yoga's lord → multiply yoga weight x1.5
+    If current AD lord matches a yoga's lord → multiply x1.2
+    Additive on top of existing DASHA_OVERLAY_V2. Cap extra boost at ±0.15 per dim.
+    """
+    if active_period is None or not soul.yoga_dimensions.get("net"):
+        return {}
+
+    from clawclaw_soul.yogas import YOGA_META
+
+    md_lord = active_period["mahadasha"]
+    ad_lord = active_period["antardasha"]
+    boost: dict[str, float] = {d: 0.0 for d in DIMENSION_NAMES}
+
+    for yoga in soul.yogas:
+        name = yoga.get("name", "")
+        meta = YOGA_META.get(name)
+        if not meta:
+            for key in YOGA_META:
+                if name.startswith(key.split(" (")[0]) or key.startswith(name.split(" (")[0]):
+                    meta = YOGA_META[key]
+                    break
+        if not meta or not meta.get("lord"):
+            continue
+
+        multiplier = 0.0
+        if meta["lord"] == md_lord:
+            multiplier = 0.5  # x1.5 effect = base + 0.5 extra
+        elif meta["lord"] == ad_lord:
+            multiplier = 0.2  # x1.2 effect = base + 0.2 extra
+
+        if multiplier > 0:
+            polarity = meta["polarity"]
+            weight = 0.15 if len(meta["dims"]) == 1 else 0.1
+            for dim in meta["dims"]:
+                boost[dim] += polarity * weight * multiplier
+
+    # Cap at ±0.15 per dimension
+    for dim in boost:
+        boost[dim] = max(-0.15, min(0.15, boost[dim]))
+
+    return boost
+
+
 def compute_modifiers_v2(
     soul: "AgentSoul",  # noqa: F821
     timestamp: datetime | None = None,
@@ -348,17 +397,21 @@ def compute_modifiers_v2(
     transit_scores = compute_transit_scores(transit_positions, natal_moon_sign)
     transit_dims = compute_transit_dimensions(transit_scores)
 
-    # 4. Combine: additive with tanh
+    # 4. Dasha-yoga resonance boost
+    yoga_boost = compute_dasha_yoga_boost(soul, active)
+
+    # 5. Combine: additive with tanh
     dimensions = {}
     for dim in DIMENSION_NAMES:
         raw = (
             natal_dims.get(dim, 0.0) * w_natal
             + dasha_dims.get(dim, 0.0) * w_dasha
             + transit_dims.get(dim, 0.0) * w_transit
+            + yoga_boost.get(dim, 0.0)
         )
         dimensions[dim] = max(-1.0, min(1.0, math.tanh(raw)))
 
-    # 5. Tarabala volatility
+    # 6. Tarabala volatility
     natal_positions = get_planet_positions(soul.birth_dt)
     volatility = compute_tarabala_volatility(transit_positions, natal_positions)
 

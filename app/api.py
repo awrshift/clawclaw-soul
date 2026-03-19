@@ -24,7 +24,7 @@ from clawclaw_soul.soul import AgentSoul
 
 app = FastAPI(
     title="Soul Oracle API",
-    version="0.2.0",
+    version="0.3.0",
     description="Deterministic planetary mathematics → AI agent execution parameters. x402-native.",
 )
 
@@ -205,7 +205,7 @@ def health():
     """Service health check. Always free."""
     return HealthResponse(
         status="ok",
-        version="0.2.0",
+        version="0.3.0",
         engine="pyswisseph+lahiri",
         payments="x402" if PAY_TO else "disabled",
     )
