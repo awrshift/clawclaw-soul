@@ -1,43 +1,49 @@
-# Roadmap
+# The Trajectory
 
-ClawClaw Soul is under active development. Here's what's coming.
+From procedural personality to AGI identity infrastructure.
 
-## Done
+Our roadmap isn't about adding features -- it's about solving the identity crisis in autonomous systems. As agent-to-agent communication scales, agents need stable, distinct, and mathematically reproducible identities.
 
-- [x] Core engine: 9 behavioral dimensions from orbital mechanics
-- [x] Soul Card generation from any temporal epoch
-- [x] Temporal drift (parameters evolve deterministically over time)
-- [x] Self-hostable API (FastAPI + Docker)
-- [x] Divergence benchmark: 5.8 sigma structural proof
-- [x] Landing page + custom domain (clawclawsoul.com)
-- [x] Design system (102 tokens, Astrolabe palette)
-- [x] Public API: `generate()` + `.card` property
+## v0.3: The Foundations (current)
+
+- [x] Deterministic personality engine via Swiss Ephemeris
+- [x] 58 pattern detectors and 9-axis behavioral profiling
+- [x] Agent compatibility scoring (synergy 0-10, tension detection)
+- [x] Temporal drift mechanics (agents experience "seasons" of focus)
 - [x] SOUL.md standard + CLI (`clawclaw-soul init` / `verify`)
 - [x] MCP Server (4 tools for Claude Desktop / Cursor)
 - [x] PyPI: `pip install clawclaw-soul`
-- [x] VPS deployment (Docker, hardened)
-- [x] **58 pattern detectors** — 10x behavioral diversity
-- [x] **Agent compatibility** — synergy scoring, tension detection, dynamic mode
-- [x] **Period-pattern resonance** — behavioral amplifiers modulated by active periods
-- [x] **Sector attributes** — classification + motivation for all 27 sectors
+- [x] Self-hostable API (FastAPI + Docker)
 
-## Now
+## v0.4: Swarm Orchestration
 
-- [ ] **Launch** — Hacker News, r/LocalLLaMA, X
-- [ ] **GitHub Action** `clawclaw-soul/animate` — auto-update SOUL.md daily via transits
+- [ ] Native framework integrations (CrewAI, LangGraph, AutoGen)
+- [ ] Team-composition analysis: calculate compatibility and blind spots across entire swarms
+- [ ] `/swarm/seed` endpoint: batch-generate N diverse identities optimized for cognitive coverage
+- [ ] GitHub Action: auto-update SOUL.md daily via temporal drift
 
-## Next
+## v0.5: The Epoch Explorer
 
-- [ ] `/swarm/seed` — batch-generate N diverse agent identities
-- [ ] **Precision transit scoring** — 672-rule bindu system for finer drift
-- [ ] **Framework integrations** — CrewAI, LangGraph, AutoGen adapters
+- [ ] Interactive gallery of historical and synthetic epochs
+- [ ] Digital Twins: generate agents from notable temporal configurations
+- [ ] Procedural generation of millions of synthetic souls for large-scale simulations
+- [ ] Precision transit scoring (672-rule bindu system)
 
-## Future
+## v1.0: The Soul Oracle
 
-- [ ] Soul Oracle — autonomous agent managing agent identities
+- [ ] Autonomous management agent that assigns, monitors, and updates the states of your entire swarm
+- [ ] API-driven identity layer for enterprise AI fleets
+- [ ] Drift alerts: notify orchestrators when agent personality shifts significantly
+- [ ] Swarm diversity optimizer: suggest optimal epochs for new agents to maximize cognitive coverage
+
+## v2.0+: AGI Identity Infrastructure
+
+- [ ] Cryptographic agent state: verifiable, immutable identity signatures for agent-to-agent economy
 - [ ] A2A protocol integration (agent-card.json + SOUL.md)
-- [ ] On-chain identity (ERC-8004 Soulbound Tokens)
+- [ ] Autonomous agent companies: entire organizational charts populated by specialized, non-collapsing, temporally dynamic digital souls
 
 ---
+
+We are moving AI past flat system prompts, laying the foundational identity infrastructure for autonomous agent organizations.
 
 Want to contribute? Check [issues](https://github.com/awrshift/clawclaw-soul/issues) or open a PR.

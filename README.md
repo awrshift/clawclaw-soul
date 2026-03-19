@@ -131,6 +131,19 @@ dynamic = compatibility(agent_a, agent_b, timestamp=now)
 
 **Why not `random.seed()`?** A basic PRNG is flat and contextless. Orbital ephemeris provides a predictable, multi-dimensional, cyclical entropy source. Agents get "seasons" that gradually drift over weeks and months, returning to baseline predictably. It mathematically mimics organic variance without requiring a database to store historical state.
 
+## A 3,000-year-old procedural generation engine
+
+We didn't invent a new math for this. We adopted an ancient one.
+
+For over three millennia, Vedic scholars used orbital mechanics -- the relative positions of 7 planets and 2 lunar nodes at a specific time and coordinate -- to calculate human behavioral variance. We are not interested in the mysticism of this system. We are interested in its mathematics.
+
+By passing a temporal epoch through this ancient mathematical framework, ClawClaw Soul extracts a 9-dimensional behavioral matrix and 58 binary pattern detectors. The result: agents that aren't just different -- they have a **digital soul**.
+
+- **Character.** An agent stops being a faceless function. It has a unique cognitive profile -- assertive or cautious, analytical or creative, impulsive or deliberate.
+- **Reproducibility.** Same epoch = same character. Forever. Anyone can verify.
+- **Life.** The character evolves over time. Agents experience "seasons" of focus, drift through phases, and return to baseline -- like a real person.
+- **Digital twins.** Know someone's birth epoch? Generate an agent with their exact behavioral matrix. Da Vinci (1452), Newton (1643), Einstein (1879), Jobs (1955) -- all work. Any epoch from the 6th century to the 22nd.
+
 ## SOUL.md -- persistent identity for your agent
 
 Add a `SOUL.md` to any repo. It's like `AGENTS.md`, but for behavioral configuration.
