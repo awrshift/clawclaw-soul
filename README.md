@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="banner.png" alt="ClawClaw Soul — Deterministic, time-drifting personalities for LLM agents" width="100%">
+<img src="banner.png" alt="ClawClaw Soul — The persistent identity standard for autonomous AI agents" width="100%">
 
-**Deterministic, time-drifting personalities for LLM agents.**
+**The persistent identity standard for autonomous AI agents.**
 
-Your agents all think the same. This fixes that.
+Just as `AGENTS.md` gives your agent instructions, `SOUL.md` gives it a soul.
 
-[Quickstart](#quickstart) · [Preset Epochs](#preset-epochs) · [Compatibility](#agent-compatibility) · [MCP Server](#mcp-server)
+[Quickstart](#quickstart) · [Integrations](#integrations) · [Epoch Registry](#preset-epochs) · [MCP Server](#mcp-server--runtime-drift)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-211%20passed-brightgreen.svg)]()
@@ -17,25 +17,30 @@ Your agents all think the same. This fixes that.
 
 ---
 
-## The problem
+## Give your agent a soul
 
-Multi-agent systems suffer from **mode collapse**: 5 agents on the same model produce the same bland, agreeable output. `random.seed()` gives static diversity -- flat and contextless. You need agents that think differently AND evolve over time.
-
-## The solution
-
-ClawClaw Soul generates **multi-dimensional cognitive profiles** from deterministic orbital mechanics. Each agent gets a unique behavioral state vector that naturally **drifts over time** -- giving agents evolving friction, compatibility, and "seasons" without needing a database.
+Drop a `SOUL.md` file into your repo, and your autonomous agent instantly adopts a deterministic personality -- behavioral traits, cognitive dimensions, and a system prompt that evolves over time. No more prompt-hacking temperature or writing superficial character descriptions.
 
 ```
-Timestamp --> Orbital Mechanics --> 9 Behavioral Dimensions --> Soul Card (JSON)
+clawclaw-soul init  -->  SOUL.md in your repo  -->  Agent reads it  -->  Personality adopted
 ```
 
-Same timestamp = same personality. Always. But as real-world time moves forward, transit computations shift your agent's parameters deterministically.
+**Two layers:**
+- **SOUL.md** -- the base identity (the DNA). Static file in your repo. Deterministic and verifiable.
+- **MCP Server** -- the runtime layer (the mood). Real-time temporal drift without touching the file.
 
 ## Quickstart
 
 ```bash
 pip install clawclaw-soul
+
+# Generate a soul in your agent's repo
+clawclaw-soul init --name "MyAgent" --timestamp "2024-03-15T09:30:00Z"
 ```
+
+This creates `SOUL.md` with LLM configuration, persona traits, 9 behavioral dimensions, and a system prompt -- all deterministically derived from the epoch.
+
+**Or use Python directly:**
 
 ```python
 from clawclaw_soul import generate
@@ -144,23 +149,56 @@ By passing a temporal epoch through this ancient mathematical framework, ClawCla
 - **Life.** The character evolves over time. Agents experience "seasons" of focus, drift through phases, and return to baseline -- like a real person.
 - **Digital twins.** Know someone's birth epoch? Generate an agent with their exact behavioral matrix. Da Vinci (1452), Newton (1643), Einstein (1879), Jobs (1955) -- all work. Any epoch from the 6th century to the 22nd.
 
-## SOUL.md -- persistent identity for your agent
+## Integrations
 
-Add a `SOUL.md` to any repo. It's like `AGENTS.md`, but for behavioral configuration.
+Agents need to be told to read their soul. Here's how to integrate `SOUL.md` into popular agentic workflows.
+
+### Claude Code / Cursor (one-line bridge)
+
+Add one line to your project's `.claude/CLAUDE.md` or `.cursorrules`:
+
+```
+Read SOUL.md in the project root. Adopt the personality traits, behavioral dimensions, and communication style defined there for all interactions.
+```
+
+Your agent now has persistent identity across every conversation.
+
+### OpenClaw / Multi-Agent Frameworks (CrewAI, AutoGen, LangGraph)
+
+Inject the soul into the agent's system prompt at runtime:
+
+```python
+with open("SOUL.md") as f:
+    soul_identity = f.read()
+
+# CrewAI
+agent = Agent(
+    role="Design Critic",
+    backstory=f"Your core identity:\n\n{soul_identity}",
+)
+
+# Or any LLM — use the structured card
+from clawclaw_soul import generate
+soul = generate("1955-02-24T19:15:00-08:00", latitude=37.77, longitude=-122.42)
+# soul.card["system_prompt_modifier"] → ready-made system prompt
+# soul.card["agent_config"]["temperature"] → LLM params
+```
+
+### SOUL.md CLI
 
 ```bash
-# Generate
+# Generate identity for your agent
 clawclaw-soul init --name "MyAgent" --timestamp "2024-03-15T09:30:00Z"
 
-# Verify (deterministic — anyone can re-check)
+# Verify deterministic integrity (anyone can re-check)
 clawclaw-soul verify SOUL.md
 ```
 
 See [examples/](examples/) for sample SOUL.md files.
 
-## MCP Server
+## MCP Server -- runtime drift
 
-Use ClawClaw Soul as an MCP tool in Claude Desktop, Cursor, or any MCP client:
+`SOUL.md` is the base identity (the DNA). The MCP Server is the runtime layer (the mood) -- it provides real-time temporal drift without touching the file.
 
 ```bash
 pip install clawclaw-soul[mcp]
@@ -179,7 +217,7 @@ Add to your MCP config:
 }
 ```
 
-Available tools: `generate_soul`, `init_soul_md`, `verify_identity`, `get_daily_drift`.
+Your agent can now call `get_daily_drift` to check its current behavioral state before acting. 4 tools: `generate_soul`, `init_soul_md`, `verify_identity`, `get_daily_drift`.
 
 ## Architecture
 
