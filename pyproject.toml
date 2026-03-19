@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "clawclaw-soul"
 version = "0.3.0"
-description = "The persistent identity standard for autonomous AI agents. SOUL.md gives your agent a deterministic, evolving soul."
+description = "Procedural generation engine for SOUL.md — deterministic, evolving identities for autonomous AI agents."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

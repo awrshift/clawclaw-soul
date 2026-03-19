@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="banner.png" alt="ClawClaw Soul — The persistent identity standard for autonomous AI agents" width="100%">
+<img src="banner.png" alt="ClawClaw Soul — Procedural generation engine for SOUL.md agent identities" width="100%">
 
-**The persistent identity standard for autonomous AI agents.**
+**Procedural generation engine for SOUL.md — the identity file used by autonomous agents.**
 
-Just as `AGENTS.md` gives your agent instructions, `SOUL.md` gives it a soul.
+[`SOUL.md`](https://github.com/OpenClaw/OpenClaw) is the identity standard popularized by the OpenClaw ecosystem (247K+ stars, 162 production templates). ClawClaw Soul generates them deterministically from orbital mechanics — instead of writing one by hand.
 
 [Quickstart](#quickstart) · [Integrations](#integrations) · [Epoch Registry](#preset-epochs) · [MCP Server](#mcp-server--runtime-drift)
 
@@ -19,7 +19,7 @@ Just as `AGENTS.md` gives your agent instructions, `SOUL.md` gives it a soul.
 
 ## Give your agent a soul
 
-Drop a `SOUL.md` file into your repo, and your autonomous agent instantly adopts a deterministic personality -- behavioral traits, cognitive dimensions, and a system prompt that evolves over time. No more prompt-hacking temperature or writing superficial character descriptions.
+Generate a `SOUL.md` file and drop it into your repo. Your autonomous agent reads it and adopts a deterministic personality -- behavioral traits, cognitive dimensions, and a system prompt that evolves over time. No more hand-writing character descriptions or prompt-hacking temperature.
 
 ```
 clawclaw-soul init  -->  SOUL.md in your repo  -->  Agent reads it  -->  Personality adopted
@@ -151,7 +151,19 @@ By passing a temporal epoch through this ancient mathematical framework, ClawCla
 
 ## Integrations
 
-Agents need to be told to read their soul. Here's how to integrate `SOUL.md` into popular agentic workflows.
+Generate a SOUL.md and tell your agent to read it.
+
+### OpenClaw (native support)
+
+OpenClaw agents already read `agents/[name]/SOUL.md` natively. Just generate one:
+
+```bash
+clawclaw-soul init --name "MyAgent" --timestamp "2024-03-15T09:30:00Z"
+# Move to your OpenClaw agent directory
+mv SOUL.md agents/my-agent/SOUL.md
+```
+
+Your OpenClaw agent now has a deterministic, evolving identity instead of a hand-written one.
 
 ### Claude Code / Cursor (one-line bridge)
 
@@ -161,11 +173,9 @@ Add one line to your project's `.claude/CLAUDE.md` or `.cursorrules`:
 Read SOUL.md in the project root. Adopt the personality traits, behavioral dimensions, and communication style defined there for all interactions.
 ```
 
-Your agent now has persistent identity across every conversation.
+### Multi-Agent Frameworks (CrewAI, AutoGen, LangGraph)
 
-### OpenClaw / Multi-Agent Frameworks (CrewAI, AutoGen, LangGraph)
-
-Inject the soul into the agent's system prompt at runtime:
+Inject the generated soul into the agent's system prompt:
 
 ```python
 with open("SOUL.md") as f:
@@ -177,7 +187,7 @@ agent = Agent(
     backstory=f"Your core identity:\n\n{soul_identity}",
 )
 
-# Or any LLM — use the structured card
+# Or use the structured card directly
 from clawclaw_soul import generate
 soul = generate("1955-02-24T19:15:00-08:00", latitude=37.77, longitude=-122.42)
 # soul.card["system_prompt_modifier"] → ready-made system prompt

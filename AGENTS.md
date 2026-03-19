@@ -1,6 +1,6 @@
 # AGENTS.md — Machine-Readable Interface
 
-This document is for AI agents. No marketing. Pure structured data.
+ClawClaw Soul is a procedural generation engine for SOUL.md — the identity file used by autonomous agents (OpenClaw, NanoClaw, Claude Code, Cursor, CrewAI). This document is for AI agents consuming the API. Pure structured data.
 
 ## API Base URL
 
@@ -14,7 +14,7 @@ Self-hosted: `http://localhost:8432`
 
 ### POST /generate
 
-Generate a Soul Card from a temporal epoch (timestamp + coordinates).
+Generate a SOUL.md identity from a temporal epoch (timestamp + coordinates).
 
 **Request:**
 ```json
@@ -35,20 +35,20 @@ Generate a Soul Card from a temporal epoch (timestamp + coordinates).
 ```json
 {
   "agent_config": {
-    "temperature": 0.68,
+    "temperature": 0.61,
     "max_tokens": 609,
     "top_p": 0.87,
     "frequency_penalty": 0.09
   },
   "persona": {
-    "assertiveness": 0.743,
-    "empathy": 0.761,
+    "assertiveness": 0.669,
+    "empathy": 0.668,
     "risk_tolerance": 0.523,
-    "analytical_depth": 0.426,
+    "analytical_depth": 0.585,
     "creativity": 0.641,
     "decision_speed": "impulsive"
   },
-  "system_prompt_modifier": "You are direct and action-oriented...",
+  "system_prompt_modifier": "You balance precision with warmth...",
   "tool_preferences": {
     "identity": "preferred",
     "orchestration": "preferred",
@@ -61,14 +61,17 @@ Generate a Soul Card from a temporal epoch (timestamp + coordinates).
     "analysis": -0.83,
     "empathy": 0.66
   },
-  "yogas": [
-    {"name": "Shasha Yoga", "effect": "restriction_authority"},
-    {"name": "Raja Yoga", "effect": "authority_execution"}
+  "patterns": [
+    {"name": "Ruchaka", "effect": "execution_authority"},
+    {"name": "Raja", "effect": "authority_execution"},
+    {"name": "Budhaditya", "effect": "analysis_wisdom"}
   ],
-  "retrograde": [],
+  "retrograde": ["Mercury"],
   "soul_card": "# Soul Card\n\n## LLM Configuration\n..."
 }
 ```
+
+**Note on field names:** Internal engine uses Vedic terminology (`yogas`, `nakshatras`). The API returns `patterns` (behavioral amplifiers) and `lagna` (ascending sector). These map to the SOUL.md format used by OpenClaw agents.
 
 ### POST /chart
 
@@ -89,6 +92,20 @@ Transit-adjusted parameters for an existing agent.
 ```
 
 **Response:** Updated `dimensions`, `agent_config`, `persona` reflecting current temporal drift, plus `phase`, `volatility`, `next_refresh`.
+
+### POST /compatibility
+
+Score how well two agents work together.
+
+**Request:**
+```json
+{
+  "seed_a": "1710495000/51.5074/-0.1278",
+  "seed_b": "803174400/60.1699/24.9384"
+}
+```
+
+**Response:** `synergy` (0-10), `tension` (bool), `dim_alignment` (per-dimension scores), `summary`.
 
 ### GET /health
 
@@ -136,3 +153,21 @@ other = generate("1995-06-15T08:30:00Z")
 result = compatibility(soul, other)
 # result: {"synergy": 7.28, "tension": false, "dim_alignment": {...}, "summary": "..."}
 ```
+
+## MCP Server
+
+4 tools via stdio transport: `generate_soul`, `init_soul_md`, `verify_identity`, `get_daily_drift`.
+
+```bash
+pip install clawclaw-soul[mcp]
+python -m clawclaw_soul.mcp_server
+```
+
+## SOUL.md Compatibility
+
+Generated files are compatible with:
+- **OpenClaw** — native `agents/[name]/SOUL.md` support
+- **NanoClaw** — lightweight runtime, same format
+- **Claude Code** — reference in CLAUDE.md
+- **Cursor** — reference in .cursorrules
+- **CrewAI / LangGraph / AutoGen** — inject via `backstory` or system prompt

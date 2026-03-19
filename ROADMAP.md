@@ -1,8 +1,8 @@
 # The Trajectory
 
-From procedural personality to AGI identity infrastructure.
+From procedural personality generator to AGI identity infrastructure.
 
-Our roadmap isn't about adding features -- it's about solving the identity crisis in autonomous systems. As agent-to-agent communication scales, agents need stable, distinct, and mathematically reproducible identities.
+[`SOUL.md`](https://github.com/OpenClaw/OpenClaw) is the identity file standard for autonomous agents, popularized by the OpenClaw ecosystem (247K+ stars). ClawClaw Soul is the generation engine -- instead of hand-writing SOUL.md, derive it deterministically from orbital mechanics. As agent-to-agent communication scales, agents need stable, distinct, and mathematically reproducible identities.
 
 ## v0.3: The Foundations (current)
 
@@ -17,7 +17,7 @@ Our roadmap isn't about adding features -- it's about solving the identity crisi
 
 ## v0.4: Swarm Orchestration
 
-- [ ] Native framework integrations (CrewAI, LangGraph, AutoGen)
+- [ ] Native framework integrations (OpenClaw, NanoClaw, CrewAI, LangGraph, AutoGen)
 - [ ] Team-composition analysis: calculate compatibility and blind spots across entire swarms
 - [ ] `/swarm/seed` endpoint: batch-generate N diverse identities optimized for cognitive coverage
 - [ ] GitHub Action: auto-update SOUL.md daily via temporal drift
