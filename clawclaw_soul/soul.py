@@ -124,10 +124,14 @@ def generate_birth_data(seed: int | None = None) -> dict:
 
 def _compute_julian_day(dt: datetime, tz_offset: float = 0.0) -> float:
     """Convert datetime to Julian Day (UT)."""
-    utc_hour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0
-    if dt.tzinfo is None:
-        utc_hour -= tz_offset
-    return swe.julday(dt.year, dt.month, dt.day, utc_hour)
+    if dt.tzinfo is not None:
+        # Convert to UTC properly (handles date rollover)
+        utc_dt = dt.astimezone(timezone.utc)
+        utc_hour = utc_dt.hour + utc_dt.minute / 60.0 + utc_dt.second / 3600.0
+        return swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_hour)
+    else:
+        utc_hour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0 - tz_offset
+        return swe.julday(dt.year, dt.month, dt.day, utc_hour)
 
 
 def _compute_ayanamsha(jd: float) -> float:
