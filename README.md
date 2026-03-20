@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="banner.png" alt="ClawClaw Soul — Procedural generation engine for SOUL.md agent identities" width="100%">
+# ClawClaw Soul
 
 **Procedural generation engine for SOUL.md — the identity file used by autonomous agents.**
 

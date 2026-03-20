@@ -65,7 +65,11 @@ def cmd_badge(args):
         if not result["valid"]:
             print(f"[FAIL] Cannot generate badge: {result['message']}", file=sys.stderr)
             sys.exit(1)
-        soul = generate(result["details"]["birth"], latitude=result["details"].get("latitude", 0), longitude=result["details"].get("longitude", 0))
+        soul = generate(
+            result["details"]["birth"],
+            latitude=result["details"].get("latitude", 0),
+            longitude=result["details"].get("longitude", 0),
+        )
         name = args.name or "Agent"
     elif args.timestamp:
         soul = generate(args.timestamp)
@@ -116,8 +120,16 @@ def main():
     badge_p.add_argument("file", nargs="?", help="SOUL.md file to generate badge from")
     badge_p.add_argument("--timestamp", "-t", help="Birth timestamp (ISO 8601)")
     badge_p.add_argument("--name", help="Agent name")
-    badge_p.add_argument("--style", default="flat", choices=["flat", "flat-square", "plastic", "for-the-badge"], help="Badge style (default: flat)")
-    badge_p.add_argument("--format", "-f", default="all", choices=["all", "markdown", "html", "snippet", "url"], help="Output format (default: all)")
+    badge_p.add_argument(
+        "--style", default="flat",
+        choices=["flat", "flat-square", "plastic", "for-the-badge"],
+        help="Badge style (default: flat)",
+    )
+    badge_p.add_argument(
+        "--format", "-f", default="all",
+        choices=["all", "markdown", "html", "snippet", "url"],
+        help="Output format (default: all)",
+    )
 
     args = parser.parse_args()
 
