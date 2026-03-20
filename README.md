@@ -8,10 +8,11 @@
 
 [Quickstart](#quickstart) · [Integrations](#integrations) · [Epoch Registry](#preset-epochs) · [MCP Server](#mcp-server--runtime-drift)
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-211%20passed-brightgreen.svg)]()
 [![PyPI](https://img.shields.io/pypi/v/clawclaw-soul.svg)](https://pypi.org/project/clawclaw-soul/)
+[![CI](https://img.shields.io/github/actions/workflow/status/awrshift/clawclaw-soul/ci.yml?label=tests)](https://github.com/awrshift/clawclaw-soul/actions)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)]()
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![ClawClaw Soul](https://img.shields.io/badge/Soul-Leo%20%C2%B7%20Verified-E8A838?style=flat)](https://github.com/awrshift/clawclaw-soul)
 
 </div>
 
@@ -205,6 +206,27 @@ clawclaw-soul verify SOUL.md
 ```
 
 See [examples/](examples/) for sample SOUL.md files.
+
+## Badge
+
+Add a Soul badge to your README to show your agent has a verified identity:
+
+```bash
+# From a SOUL.md file
+clawclaw-soul badge SOUL.md
+
+# From a timestamp
+clawclaw-soul badge --timestamp "2024-03-15T09:30:00Z" --name "MyAgent"
+
+# Just the markdown
+clawclaw-soul badge --timestamp "2024-03-15T09:30:00Z" -f markdown
+```
+
+Output:
+
+```
+[![ClawClaw Soul](https://img.shields.io/badge/Soul-Aries%20·%20Verified-E8A838?style=flat)](https://github.com/awrshift/clawclaw-soul)
+```
 
 ## MCP Server -- runtime drift
 
