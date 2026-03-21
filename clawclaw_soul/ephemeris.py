@@ -18,7 +18,7 @@ CACHE_DIR = Path(os.environ.get("AGENT_SOUL_CACHE", Path.home() / ".agent-soul")
 _SKYFIELD_TARGETS = {
     "Sun": "sun",
     "Moon": "moon",
-    "Mars": "mars",
+    "Mars": "mars barycenter",
     "Mercury": "mercury",
     "Jupiter": "jupiter barycenter",
     "Venus": "venus",
@@ -38,7 +38,7 @@ def _ensure_loaded():
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     _loader = Loader(str(CACHE_DIR))
-    _ephemeris = _loader("de421.bsp")
+    _ephemeris = _loader("de440s.bsp")
     _ts = _loader.timescale()
 
 
